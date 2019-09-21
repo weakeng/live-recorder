@@ -56,7 +56,7 @@ class CCLive extends Live implements Api {
             this.setNickName(match['anchorName']?match['anchorName'][1]:'');
             this.setTitle(match['title']?match['title'][1]:'');
         }else{
-            throw `获取直播源信息失败！${CCLive.SITE_NAME}房间号${this.roomId},主播未开播或房间号有误`;
+            throw `获取房间信息失败！${CCLive.SITE_NAME}房间号${this.roomId},主播未开播或房间号有误`;
         }
 
     }
