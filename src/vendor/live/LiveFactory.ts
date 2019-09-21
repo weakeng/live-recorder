@@ -8,6 +8,7 @@ import CCLive from "./CCLive";
 import Cache from '../Cache';
 import Live from "./Live";
 
+
 class LiveFactory {
     public static getLive(roomUrl: string) {
         if (InkeLive.MATCH_ROOM_URL.test(roomUrl)) {
@@ -77,7 +78,8 @@ class LiveFactory {
             }
             liveList.push(live);
         })).then(() => {
-            list = [];
+            //@ts-ignore
+            let resList = [];
             liveList.forEach((live: any) => {
                 let item = {
                     siteName: live.getSiteName(),
@@ -88,9 +90,18 @@ class LiveFactory {
                     roomUrl: live.roomUrl,
                     liveStatus: live.getLiveStatus(),
                 };
-                list.push(item);
+                list.forEach((vo:any)=>{
+                     if(vo['roomUrl']==item['roomUrl']){
+                         //@ts-ignore
+                         item['isAutoRecord']=vo['isAutoRecord']||false;
+                          //@ts-ignore
+                         item['recordStatus']=vo['recordStatus']||1;
+                     }
+                });
+                resList.push(item);
             });
-            Cache.writeRoomList(list);
+             //@ts-ignore
+            Cache.writeRoomList(resList);
         });
     }
 }

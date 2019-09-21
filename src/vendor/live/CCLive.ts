@@ -6,7 +6,7 @@ class CCLive extends Live implements Api {
     public static readonly SITE_NAME = "CC直播";
     public static readonly SITE_ICON = "https://cc.163.com/favicon.ico";
     public static readonly BASE_API_LIVE_URL = "http://cgi.v.cc.163.com/video_play_url/%s";
-    public static readonly MATCH_ROOM_URL = /https:\/\/cc\.163\.com\/(\d+)/;
+    public static readonly MATCH_ROOM_URL = /http(s)?:\/\/cc\.163\.com\/(\d+)/;
     public static readonly BASE_ROOM_URL = "https://cc.163.com/%s";
 
     constructor(roomUrl: string) {

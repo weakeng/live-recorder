@@ -47,6 +47,7 @@ export default Vue.extend({});
 .header {
   width: 100%;
   height: 95px;
+  -webkit-app-region: drag;
   background: rgb(227, 74, 99);
   .list {
     display: flex;

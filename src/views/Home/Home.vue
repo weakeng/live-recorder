@@ -1,5 +1,7 @@
 <template>
   <div class="home">
+
+
     <Table border :columns="liveInfoHeader" :data="liveInfoList" size="large"></Table>
     <div class="btn-add">
       <Button
@@ -15,7 +17,6 @@
         <Radio label="输入网址"></Radio>
         <Radio label="输入房间号"></Radio>
       </RadioGroup>
-
         <Input
           v-model="siteAddress"
           v-show="addLive_method==='输入网址'"

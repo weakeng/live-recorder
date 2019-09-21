@@ -15,13 +15,17 @@
 
 <script lang="ts">
 import Vue from "vue";
-import {ipcRenderer}  from "electron"
+import {ipcRenderer,remote }  from "electron"
+
 
 export default Vue.extend({
   methods:{
      minFrame(){
         ipcRenderer.send('min');
-     }
+     },
+    closeFrame(){
+       remote.app.quit();
+    }
   }
 });
 </script>
@@ -30,6 +34,7 @@ export default Vue.extend({
 .header {
   width: 100%;
   height: 35px;
+  -webkit-app-region: drag;
   background: #e34a63;
   display: flex;
   flex-direction: row;
@@ -51,6 +56,7 @@ export default Vue.extend({
       margin-right: 20px;
       cursor: pointer;
       .min,.close{
+        -webkit-app-region: no-drag;
         margin:0 5px;
       }
     }

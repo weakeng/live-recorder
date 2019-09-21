@@ -9,12 +9,12 @@ export default Vue.extend({
     mounted: function () {
         this.siteCode = this.siteNameList[0]["siteCode"];
         this.refreshRoomData();
-        this.$once("hook:beforeDestroy", () => {
-            if (this.interVal) {
-                clearInterval(this.interVal);
-                this.interVal = undefined;
-            }
-        });
+        /*        this.$once("hook:beforeDestroy", () => {
+                    if (this.interVal) {
+                        clearInterval(this.interVal || undefined);
+                        this.interVal = null;
+                    }
+                });*/
     },
     data() {
         return {
@@ -25,9 +25,7 @@ export default Vue.extend({
             addLive_method: "输入网址",
             siteCode: 0,
             cmdList: {}, //以roomUrl为唯一索引cmd数组
-            recodingList: {}, //以roomUrl为唯一索引正在录制数组
             modal_add_live: false,
-            interVal: undefined,
             liveInfoHeader: [
                 {
                     title: "直播平台",
@@ -72,11 +70,16 @@ export default Vue.extend({
                                 attrs: {
                                     src: params.row.headIcon,
                                     style:
-                                        "border-radius:50%;width: 40px;height: 40px;vertical-align: middle;margin-right:10px"
+                                        "border-radius:50%;width: 40px;height: 40px;vertical-align: middle;margin-right:10px;cursor: pointer;"
                                 },
-                                style: {}
+                                style: {},
+                                on: {
+                                    click: () => {
+                                        require("electron").shell.openExternal(params.row.roomUrl);
+                                    }
+                                }
                             }),
-                            h("strong", params.row.nickName)
+                            h("strong", params.row.nickName,{ attrs: {style: 'cursor:pointer'},})
                         ]);
                     }
                 },
@@ -104,20 +107,23 @@ export default Vue.extend({
                     title: "自动录制",
                     align: "center",
                     width: 95,
-                    key: "liveStatus",
+                    key: "isAutoRecord",
 
                     render: (h: any, params: any) => {
-                        return h('Switch',
+                        return h('i-switch',
                             {
                                 props: {
-                                    size: "large",
-                                    value: params["row"]["status"] === 1
+                                    type: "info",
+                                    value: params["row"]["isAutoRecord"] === true
                                 },
-                                // on: {
-                                //     "on-change": status => {
-                                //
-                                //     }
-                                // }
+                                on: {
+                                    "on-change": (status: any) => {
+                                        //@ts-ignore
+                                        this.liveInfoList[params.index]['isAutoRecord'] = status;
+                                        //@ts-ignore
+                                        Cache.saveRoom(params['row']['roomUrl'], {'isAutoRecord': status});
+                                    }
+                                }
                             })
                     }
                 },
@@ -136,10 +142,92 @@ export default Vue.extend({
     },
 
     methods: {
+        async recordRoomUrl(index: number, roomUrl: string) {
+            let list = null;
+            let live;
+            try {
+                live = LiveFactory.getLive(roomUrl);
+                await live.refreshRoomData();
+                list = await live.getLiveUrl();
+            } catch (error) {
+                this.$Message.error(error);
+                return;
+            }
+            let recorder = new Recorder(roomUrl);
+            recorder.onErr = err => {
+                this.liveInfoList[index]['recordStatus'] = Recorder.STATUS_PAUSE;
+                Cache.saveRoom(roomUrl, {'recordStatus': Recorder.STATUS_PAUSE});
+                this.$Message.error(`${recorder.id}:出错了。。。`);
+                console.error(`${recorder.id}:`, err);
+            };
+            recorder.onEnd = () => {
+                if (this.liveInfoList[index]['recordStatus'] == Recorder.STATUS_RECORDING) {
+                    this.liveInfoList[index]['recordStatus'] = Recorder.STATUS_AWAIT_RECORD;
+                    Cache.saveRoom(roomUrl, {'recordStatus': Recorder.STATUS_AWAIT_RECORD});
+                }
+                console.info(`${recorder.id}:录制完成。。。`);
+            };
+            let date = new Date();
+            let $siteName = live.getSiteName();
+            let $nickName = Util.filterEmoji(live.getNickName());
+            let $date =
+                date.getFullYear() +
+                "-" +
+                (date.getMonth() + 1) +
+                "-" +
+                date.getDate();
+            let savepath = path.join(
+                process.cwd(),
+                "resources/video",
+                $siteName,
+                $nickName,
+                $date
+            );
+            let fileName =
+                date.getFullYear() +
+                "" +
+                (date.getMonth() + 1) +
+                "" +
+                date.getDate() +
+                "-" +
+                date.getHours() +
+                "_" +
+                date.getMinutes() +
+                "_" +
+                date.getSeconds() +
+                ".mp4";
+            let res = Util.mkdirsSync(savepath);
+            if (!res) {
+                this.$Message.error("创建下载目录失败");
+                return;
+            }
+            this.liveInfoList[index]['recordStatus'] = Recorder.STATUS_RECORDING;
+            Cache.saveRoom(roomUrl, {'recordStatus': Recorder.STATUS_RECORDING});
+            savepath = path.join(
+                process.cwd(),
+                "resources/video",
+                $siteName,
+                $nickName,
+                $date,
+                fileName
+            );
+            //@ts-ignore
+            this.cmdList[roomUrl] = recorder.record(list[0]["liveUrl"], savepath); //以roomUrl为唯一索引cmd数组
+        },
         refreshRoomData() {
             // @ts-ignore
-            this.interVal = setInterval(() => {
+            if (!this.recorder_timer) this.recorder_timer = setInterval(() => {
                 this.liveInfoList = Cache.readRoomList();
+                this.liveInfoList.forEach((room: any, index: number) => {
+                    if (room['isAutoRecord'] && room['recordStatus'] == Recorder.STATUS_PAUSE) {
+                        room['recordStatus'] = Recorder.STATUS_AWAIT_RECORD;
+                    }
+                    if (room['recordStatus'] == Recorder.STATUS_AWAIT_RECORD && room['liveStatus']) {
+                        this.recordRoomUrl(index, room['roomUrl']).then().catch((err) => {
+                            console.error(err)
+                        });
+                    }
+                });
             }, 10000);
         },
         remove(index: number) {
@@ -177,7 +265,9 @@ export default Vue.extend({
                     headIcon: live.getHeadIcon(),
                     title: live.getTitle(),
                     roomUrl: live.roomUrl,
-                    liveStatus: live.getLiveStatus()
+                    liveStatus: live.getLiveStatus(),
+                    isAutoRecord: false,
+                    recordStatus: Recorder.STATUS_PAUSE
                 };
                 for (let i = 0; i < this.liveInfoList.length; i++) {
                     if (this.liveInfoList[i].roomUrl === live.roomUrl) {
@@ -233,14 +323,14 @@ export default Vue.extend({
         },
         renderAction(h: any, params: any) {
             //@ts-ignore
-            let recording = this.recodingList[params.row.roomUrl];
+            let recording = this.liveInfoList[params.index]['recordStatus'] == Recorder.STATUS_RECORDING;
             return h("div", [
                 h("Button", {
                     props: {
                         type: "primary",
                         size: "small",
                         icon: recording ? "" : "md-play",
-                        loading: !!recording,
+                        loading: recording,
                         shape: "circle"
                     },
                     style: {
@@ -249,71 +339,7 @@ export default Vue.extend({
                     on: {
                         click: async () => {
                             if (recording) return;
-                            let list = null;
-                            let live;
-                            try {
-                                live = LiveFactory.getLive(params.row.roomUrl);
-                                await live.refreshRoomData();
-                                list = await live.getLiveUrl();
-                            } catch (error) {
-                                this.$Message.error(error);
-                                return;
-                            }
-                            let recorder = new Recorder(params.row.roomUrl);
-                            recorder.onErr = err => {
-                                this.$set(this.recodingList, recorder.id, false);
-                                this.$Message.error("出错了。。。");
-                                console.error(err);
-                            };
-                            recorder.onEnd = () => {
-                                this.$set(this.recodingList, recorder.id, false);
-                                this.$Message.success("录制完成。。。");
-                            };
-                            let date = new Date();
-                            let $siteName = live.getSiteName();
-                            let $nickName = Util.filterEmoji(live.getNickName());
-                            let $date =
-                                date.getFullYear() +
-                                "-" +
-                                (date.getMonth() + 1) +
-                                "-" +
-                                date.getDate();
-                            let savepath = path.join(
-                                process.cwd(),
-                                "resources/video",
-                                $siteName,
-                                $nickName,
-                                $date
-                            );
-                            let fileName =
-                                date.getFullYear() +
-                                "" +
-                                (date.getMonth() + 1) +
-                                "" +
-                                date.getDate() +
-                                "-" +
-                                date.getHours() +
-                                "_" +
-                                date.getMinutes() +
-                                "_" +
-                                date.getSeconds() +
-                                ".mp4";
-                            let res = Util.mkdirsSync(savepath);
-                            if (!res) {
-                                this.$Message.error("创建下载目录失败");
-                                return;
-                            }
-                            this.$set(this.recodingList, params.row.roomUrl, true);
-                            savepath = path.join(
-                                process.cwd(),
-                                "resources/video",
-                                $siteName,
-                                $nickName,
-                                $date,
-                                fileName
-                            );
-                            //@ts-ignore
-                            this.cmdList[params.row.roomUrl] = recorder.record(list[0]["liveUrl"], savepath); //以roomUrl为唯一索引cmd数组
+                            await this.recordRoomUrl(params.index, params['row']['roomUrl']);
                         }
                     }
                 }),
@@ -332,7 +358,12 @@ export default Vue.extend({
                     on: {
                         click: () => {
                             try {
-                                this.$set(this.recodingList, params.row.roomUrl, false);
+                                this.liveInfoList[params.index]['recordStatus'] = Recorder.STATUS_PAUSE;
+                                this.liveInfoList[params.index]['isAutoRecord'] = false;
+                                Cache.saveRoom(params['row']['roomUrl'], {
+                                    'recordStatus': Recorder.STATUS_PAUSE,
+                                    'isAutoRecord': false
+                                });
                                 //@ts-ignore
                                 Recorder.stop(this.cmdList[params.row.roomUrl]);
                             } catch (error) {
@@ -347,7 +378,7 @@ export default Vue.extend({
                         size: "small",
                         shape: "circle",
                         icon: "ios-trash",
-                        disabled: !!recording
+                        disabled: recording
                     },
                     style: {
                         marginRight: "5px",
