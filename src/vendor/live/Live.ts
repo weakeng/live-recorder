@@ -1,7 +1,6 @@
-abstract class Live {
-    public static readonly InkeLive=1;
-    public static readonly HuYaLive=2;
-    public static readonly CCLive=3;
+import Api from "./Api";
+
+abstract class Live implements Api{
 
     public roomUrl: string = '';//房间地址
     protected roomId: number = 0;//真实房间号
@@ -14,6 +13,13 @@ abstract class Live {
     protected constructor(roomUrl: string) {
         this.roomUrl = roomUrl;
     }
+
+     abstract getLiveUrl():any;
+     abstract refreshRoomData():void;
+     abstract getSiteName():string;
+     abstract getSiteIcon():string;
+
+
     public setRoomId(roomId: number) {
         this.roomId = roomId;
     }

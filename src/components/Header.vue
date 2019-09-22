@@ -58,6 +58,7 @@ export default Vue.extend({});
       display: block;
       width: 100px;
       height: 100%;
+      -webkit-app-region: no-drag;
       &.active {
         background: -webkit-linear-gradient(
           rgba(218, 60, 86, 0),

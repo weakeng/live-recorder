@@ -49,7 +49,7 @@ class Cache {
         }
     }
 
-    public static addRoom(siteName: string, siteIcon: string, nickName: string, headIcon: string, title: string, roomUrl: string, liveStatus: boolean, isAutoRecord: boolean, recordStatus: number) {
+    public static addRoom(siteName: string, siteIcon: string, nickName: string, headIcon: string, title: string, roomUrl: string, liveStatus: boolean, isAutoRecord: boolean, recordStatus: number,addTime:number) {
         let roomList = Cache.readRoomList();
         roomList.forEach((vo: any) => {
             if (vo['roomUrl'] === roomUrl) {
@@ -65,7 +65,8 @@ class Cache {
             'roomUrl': roomUrl,
             'liveStatus': liveStatus,
             'isAutoRecord': isAutoRecord,
-            'recordStatus': recordStatus
+            'recordStatus': recordStatus,
+            'addTime':addTime
         };
         roomList.push(room);
         Cache.writeRoomList(roomList);

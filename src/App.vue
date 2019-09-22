@@ -18,15 +18,14 @@
     import Nav from "@/components/Nav.vue";
     import Header from "@/components/Header.vue";
     import Footer from "@/components/Footer.vue";
-    import CCLive from "@/vendor/live/CCLive";
-
+    // import CCLive from "@/vendor/live/CCLive";
 
     export default Vue.extend({
         async mounted() {
-            let cclive = new CCLive('https://cc.163.com/347831124');
+/*            let cclive = new CCLive('https://cc.163.com/47233523/');
             await cclive.refreshRoomData();
             let list = await cclive.getLiveUrl();
-            console.log(cclive, list);
+            console.log(cclive, list);*/
         },
         components: {
             Nav,

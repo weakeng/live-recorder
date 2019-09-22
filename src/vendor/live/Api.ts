@@ -1,5 +1,5 @@
 interface Api{
-  getLiveUrl():any;
+  getLiveUrl():Array<any>;
   refreshRoomData():void;
   getSiteName():string;
   getSiteIcon():string;

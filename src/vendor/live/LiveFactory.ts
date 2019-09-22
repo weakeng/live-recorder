@@ -1,12 +1,13 @@
 import InkeLive from "./InkeLive";
 import HuYaLive from "./HuYaLive";
 import CCLive from "./CCLive";
+import log from '../Logger';
+
 // import DouYuLive from "./DouYuLive";
 // import EgameLive from "./EgameLive";
 // import YYLive from "./YYLive";
 // import HuaJiaoLive from "./HuaJiaoLive";
 import Cache from '../Cache';
-import Live from "./Live";
 
 
 class LiveFactory {
@@ -35,28 +36,27 @@ class LiveFactory {
         }
     }
 
-    public static getLiveByRoomId(siteNameCode: number, roomId: string) {
+    public static getLiveByRoomId(siteNameCode: String, roomId: string) {
         let roomUrl;
         switch (siteNameCode) {
-            case Live.InkeLive:
+            case InkeLive.SITE_CODE:
                 roomUrl = InkeLive.BASE_ROOM_URL.replace(/%s/, roomId);
                 return new InkeLive(roomUrl);
-            case Live.HuYaLive:
+            case HuYaLive.SITE_CODE:
                 roomUrl = HuYaLive.BASE_ROOM_URL.replace(/%s/, roomId);
                 return new HuYaLive(roomUrl);
-            case Live.CCLive:
+            case CCLive.SITE_CODE:
                 roomUrl = CCLive.BASE_ROOM_URL.replace(/%s/, roomId);
                 return new CCLive(roomUrl);
             default:
                 throw "房间地址有误";
         }
     }
-
     public static getAllSiteName(): Array<any> {
         return [
-            {siteCode: Live.InkeLive, siteName: InkeLive.SITE_NAME},
-            {siteCode: Live.HuYaLive, siteName: HuYaLive.SITE_NAME},
-            {siteCode: Live.CCLive, siteName: CCLive.SITE_NAME},
+            {siteCode: InkeLive.SITE_CODE, siteName: InkeLive.SITE_NAME},
+            {siteCode: HuYaLive.SITE_CODE, siteName: HuYaLive.SITE_NAME},
+            {siteCode: CCLive.SITE_CODE, siteName: CCLive.SITE_NAME},
             // DouYuLive.SITE_NAME,
             // EgameLive.SITE_NAME,
             // YYLive.SITE_NAME,
@@ -70,16 +70,16 @@ class LiveFactory {
         Promise.all(list.map(async (item: any) => {
             let live = LiveFactory.getLive(item.roomUrl);
             try {
-                await live.refreshRoomData().catch((error)=>{
-                    console.error(error);
+                await live.refreshRoomData().catch((error) => {
+                    log.init().error({msg: '刷新房间信息失败！', live: item, error: error});
                 });
             } catch (error) {
-                console.error(error);
+                log.init().error({msg: '刷新房间信息失败！', live: item, error: error});
             }
             liveList.push(live);
         })).then(() => {
             //@ts-ignore
-            let resList = [];
+            let resList: array<any> = [];
             liveList.forEach((live: any) => {
                 let item = {
                     siteName: live.getSiteName(),
@@ -90,18 +90,22 @@ class LiveFactory {
                     roomUrl: live.roomUrl,
                     liveStatus: live.getLiveStatus(),
                 };
-                list.forEach((vo:any)=>{
-                     if(vo['roomUrl']==item['roomUrl']){
-                         //@ts-ignore
-                         item['isAutoRecord']=vo['isAutoRecord']||false;
-                          //@ts-ignore
-                         item['recordStatus']=vo['recordStatus']||1;
-                     }
+                list.forEach((vo: any) => {
+                    if (vo['roomUrl'] == item['roomUrl']) {
+                        //@ts-ignore
+                        item['isAutoRecord'] = vo['isAutoRecord'] || false;
+                        //@ts-ignore
+                        item['recordStatus'] = vo['recordStatus'] || 1;
+                        //@ts-ignore
+                        item['addTime'] = vo['addTime'] || new Date().getTime();
+                    }
                 });
                 resList.push(item);
             });
-             //@ts-ignore
-            Cache.writeRoomList(resList);
+            let res = resList.sort(function (a: any, b: any) {
+                return b['addTime'] - a['addTime'];
+            });
+            Cache.writeRoomList(res);
         });
     }
 }

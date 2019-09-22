@@ -1,8 +1,7 @@
 <template>
   <div class="home">
 
-
-    <Table border :columns="liveInfoHeader" :data="liveInfoList" size="large"></Table>
+    <Table border :columns="liveInfoHeader" :data="liveInfoList" size="large" ></Table>
     <div class="btn-add">
       <Button
         type="error"
