@@ -3,11 +3,11 @@ import {SiteJson} from "./Json";
 
 class HuaJiaoLive extends Live {
     public static readonly SITE: SiteJson = {
-        SITE_NAME: 'CC直播',
-        SITE_CODE: 'CCLive',
-        SITE_ICON: 'https://cc.163.com/favicon.ico',
-        MATCH_ROOM_URL: /http(s)?:\/\/cc\.163\.com\/(\d+)/,
-        BASE_ROOM_URL: 'https://cc.163.com/%s',
+        SITE_NAME: '花椒直播',
+        SITE_CODE: 'HuaJiaoLive',
+        SITE_ICON: 'https://www.huajiao.com/favicon.ico',
+        MATCH_ROOM_URL: /https:\/\/(www\.)?huajiao\.com\/(\w+)/,
+        BASE_ROOM_URL: 'https://www.huajiao.com/%s',
     };
 
     getLiveUrl(): Array<any> {

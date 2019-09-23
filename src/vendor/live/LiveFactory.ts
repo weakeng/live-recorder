@@ -1,6 +1,8 @@
 import InkeLive from "./InkeLive";
 import HuYaLive from "./HuYaLive";
 import CCLive from "./CCLive";
+import DouYuLive from "./DouYuLive";
+import EgameLive from "./EgameLive";
 import Logger from '../Logger';
 import Cache from '../Cache';
 import {LiveInfoJson} from "@/vendor/live/Json";
@@ -13,6 +15,10 @@ class LiveFactory {
             return new HuYaLive(roomUrl);
         } else if (CCLive.SITE.MATCH_ROOM_URL.test(roomUrl)) {
             return new CCLive(roomUrl);
+        } else if (DouYuLive.SITE.MATCH_ROOM_URL.test(roomUrl)) {
+            return new DouYuLive(roomUrl);
+        } else if (EgameLive.SITE.MATCH_ROOM_URL.test(roomUrl)) {
+            return new EgameLive(roomUrl);
         } else {
             throw "房间地址有误";
         }
@@ -30,6 +36,12 @@ class LiveFactory {
             case CCLive.SITE.SITE_CODE:
                 roomUrl = CCLive.SITE.BASE_ROOM_URL.replace(/%s/, roomId);
                 return new CCLive(roomUrl);
+            case DouYuLive.SITE.SITE_CODE:
+                roomUrl = DouYuLive.SITE.BASE_ROOM_URL.replace(/%s/, roomId);
+                return new DouYuLive(roomUrl);
+            case EgameLive.SITE.SITE_CODE:
+                roomUrl = EgameLive.SITE.BASE_ROOM_URL.replace(/%s/, roomId);
+                return new EgameLive(roomUrl);
             default:
                 throw "房间地址有误";
         }
@@ -40,6 +52,8 @@ class LiveFactory {
             {siteCode: InkeLive.SITE.SITE_CODE, siteName: InkeLive.SITE.SITE_NAME},
             {siteCode: HuYaLive.SITE.SITE_CODE, siteName: HuYaLive.SITE.SITE_NAME},
             {siteCode: CCLive.SITE.SITE_CODE, siteName: CCLive.SITE.SITE_NAME},
+            {siteCode: DouYuLive.SITE.SITE_CODE, siteName: DouYuLive.SITE.SITE_NAME},
+            {siteCode: EgameLive.SITE.SITE_CODE, siteName: EgameLive.SITE.SITE_NAME},
         ]
     }
 

@@ -17,14 +17,14 @@
     import Logger from "@/vendor/Logger";
     import Recorder from "@/vendor/Recorder";
     import Cache from "@/vendor/Cache";
-    // import CCLive from "@/vendor/live/CCLive";
+    import YYLive from "@/vendor/live/YYLive";
+
     export default Vue.extend({
         async mounted() {
-            // console.log('this.cmdList', this.cmdList, this.recorder_timer);
-            // let cclive = new CCLive('https://cc.163.com/47233523/');
-            // await cclive.refreshRoomData();
-            // let list = await cclive.getLiveUrl();
-            // console.log(cclive, list);
+            let cclive = new YYLive('https://www.yy.com/22490906');
+            await cclive.refreshRoomData();
+            let list = await cclive.getLiveUrl();
+            console.log(cclive, list);
         },
         components: {
             Nav,
