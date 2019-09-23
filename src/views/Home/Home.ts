@@ -6,7 +6,7 @@ import Cache from "../../vendor/Cache";
 import Util from "../../vendor/Util";
 import Logger from "../../vendor/Logger";
 import Live from "../../vendor/live/Live";
-import {LiveInfoJson} from "@/vendor/live/Json";
+import {LiveInfoJson, StreamJson} from "@/vendor/live/Json";
 
 export default Vue.extend({
     mounted: function () {
@@ -28,16 +28,16 @@ export default Vue.extend({
         };
     },
     beforeDestroy() {
+        Cache.writeRoomList(this.liveInfoList);
         this.recorder_timer && clearInterval(this.recorder_timer);
     },
     methods: {
         async recordRoomUrl(index: number, roomUrl: string) {
-            // @ts-ignore
             if (this.cmdList[roomUrl]) {
                 this.logger.error('重复录制了...', roomUrl);
                 return;
             }
-            let list: Array<any> = [];
+            let list: Array<StreamJson> = [];
             let live: Live;
             try {
                 live = LiveFactory.getLive(roomUrl);
@@ -55,32 +55,40 @@ export default Vue.extend({
             let recorder = new Recorder(roomUrl);
             recorder.onErr = err => {
                 this.cmdList[recorder.id] = null;
+                let flag = false;
                 for (let i = 0; i < this.liveInfoList.length; i++) {
                     if (this.liveInfoList[i].roomUrl == recorder.id) {
                         this.liveInfoList[i]['recordStatus'] = Recorder.STATUS_PAUSE;
-                        Cache.saveRoom(recorder.id, {'recordStatus': Recorder.STATUS_PAUSE});
+                        this.showError(`${live.getNickName()} 录制出错了。。。`);
+                        this.logger.error(`${live.getNickName()} ${recorder.id} 录制出错了。。。`, err);
+                        flag = true;
                         break;
                     }
                 }
-                this.showError(`${live.getNickName()} 录制出错了。。。`);
-                this.logger.error(`${live.getNickName()} ${recorder.id} 录制出错了。。。`, err);
+                if (!flag) {
+                    this.logger.info(`recorder.onErr ${live.getNickName()} ${recorder.id} 可能已经被删除。。。`);
+                }
             };
             recorder.onEnd = () => {
                 this.cmdList[recorder.id] = null;
+                let flag = false;
                 for (let i = 0; i < this.liveInfoList.length; i++) {
                     if (this.liveInfoList[i].roomUrl == recorder.id) {
                         if (this.liveInfoList[i]['recordStatus'] == Recorder.STATUS_RECORDING) {
                             this.liveInfoList[i]['recordStatus'] = Recorder.STATUS_AWAIT_RECORD;
-                            Cache.saveRoom(recorder.id, {'recordStatus': Recorder.STATUS_AWAIT_RECORD});
                             this.logger.info(`${live.getNickName()} ${recorder.id} 录制完成。。。切换为待录制状态`);
                             this.showInfo(`${live.getNickName()} 录制完成,等待自动录制中。。。`);
                             return;
                         }
+                        this.logger.info(`${live.getNickName()} ${recorder.id} 录制完成。。。`);
+                        this.showInfo(`${live.getNickName()} 录制完成`);
+                        flag = true;
                         break;
                     }
                 }
-                this.logger.info(`${live.getNickName()} ${recorder.id} 录制完成。。。`);
-                this.showInfo(`${live.getNickName()} 录制完成`);
+                if (!flag) {
+                    this.logger.info(`recorder.onEnd ${live.getNickName()} ${recorder.id} 可能已经被删除。。。`);
+                }
             };
             let date = new Date();
             let $siteName = live.getBaseSite().SITE_NAME;
@@ -95,63 +103,66 @@ export default Vue.extend({
                 return;
             }
             this.liveInfoList[index]['recordStatus'] = Recorder.STATUS_RECORDING;
-            Cache.saveRoom(roomUrl, {'recordStatus': Recorder.STATUS_RECORDING});
             savePath = path.join(process.cwd(), "resources/video", $siteName, $nickName, $date, fileName);
             this.showInfo(`${live.getNickName()} 开始录制。。。`);
             this.logger.info(`${live.getNickName()} ${roomUrl} 开始录制。。。`);
-            //@ts-ignore
             this.cmdList[roomUrl] = recorder.record(list[0]["liveUrl"], savePath); //以roomUrl为唯一索引cmd数组
         },
         refreshRoomData() {
             // @ts-ignore
             if (!this.recorder_timer) {
-                this.recorder_timer = setInterval(() => {
-                    this.liveInfoList = Cache.readRoomList();
-                    for (let i = 0; i < this.liveInfoList.length; i++) {
-                        let room = this.liveInfoList[i];
+                this.recorder_timer = setInterval(async () => {
+                    Promise.all(this.liveInfoList.map(async (room: LiveInfoJson, index: number) => {
+                        // this.logger.info(`Promise.all :${room.roomUrl} ${index}`);
+                        let live = LiveFactory.getLive(room.roomUrl);
+                        try {
+                            await live.refreshRoomData();
+                            room.nickName = live.getNickName();
+                            room.headIcon = live.getHeadIcon();
+                            room.title = live.getTitle() || room.title;
+                            room.liveStatus = live.getLiveStatus();
+                        } catch (error) {
+                            this.logger.error({msg: '刷新房间信息失败！', roomUrl: room.roomUrl, error: error});
+                        }
                         if (room['isAutoRecord'] && room['recordStatus'] == Recorder.STATUS_PAUSE) {
                             room['recordStatus'] = Recorder.STATUS_AWAIT_RECORD;
-                            Cache.saveRoom(room.roomUrl, {recordStatus: Recorder.STATUS_AWAIT_RECORD});
                         }
                         if (!room['liveStatus'] && room['recordStatus'] == Recorder.STATUS_RECORDING) {
                             room['recordStatus'] = Recorder.STATUS_PAUSE;
-                            Cache.saveRoom(room.roomUrl, {recordStatus: Recorder.STATUS_PAUSE});
                             this.logger.info(`${room.nickName} ${room['roomUrl']} 自动暂停`);
-                            this.showInfo(`${room.nickName} 自动暂停`);
                             try {
                                 Recorder.stop(this.cmdList[room['roomUrl']]);
                             } catch (e) {
-                                this.showError(room.nickName + ' 自动暂停失败');
                                 this.logger.error(`自动暂停失败`, room.nickName, e);
                             }
-                            //@ts-ignore`
-                            this.cmdList[room['roomUrl']] = null;
                         }
                         if (room['recordStatus'] == Recorder.STATUS_AWAIT_RECORD && room['liveStatus']) {
-                            // @ts-ignore
                             if (this.cmdList[room['roomUrl']]) {
                                 this.showError(`${room.nickName} 重复录制了。。。`);
                                 this.logger.error(`${room.nickName} 重复录制了。。。`);
                             } else {
-                                this.recordRoomUrl(i, room['roomUrl']).then().catch((err) => {
+                                this.recordRoomUrl(index, room['roomUrl']).then().catch((err) => {
                                     this.showError(`${room.nickName} 录制失败。。。`);
                                     this.logger.error(room.nickName + ' 录制失败', err);
                                 });
                             }
                         }
-                        this.liveInfoList[i] = room;
-                    }
+                    })).then(() => {
+                    }).catch((err) => {
+                        this.logger.info(`Promise.all : error `, err);
+                    });
                 }, 10000);
             }
         },
         remove(index: number) {
-            this.liveInfoList.splice(index, 1);
-            Cache.writeRoomList(this.liveInfoList);
+            if (confirm("确定要删除该任务吗")) {
+                this.liveInfoList.splice(index, 1);
+            }
         },
 
         async sureAddLive() {
 
-            let live = null;
+            let live: Live;
             if (this.addLive_method === "输入网址") {
                 try {
                     live = LiveFactory.getLive(this.siteAddress);
@@ -196,7 +207,6 @@ export default Vue.extend({
                 this.liveInfoList.unshift(item);
                 //@ts-ignore
                 this.cmdList[live.roomUrl] = null;
-                Cache.writeRoomList(this.liveInfoList);
             } catch (error) {
                 this.logger.error(error);
                 this.showError(error);
@@ -397,20 +407,15 @@ export default Vue.extend({
                     },
                     on: {
                         click: () => {
-                            this.liveInfoList[params.index]['recordStatus'] = Recorder.STATUS_PAUSE;
-                            this.liveInfoList[params.index]['isAutoRecord'] = false;
-                            Cache.saveRoom(params['row']['roomUrl'], {
-                                'recordStatus': Recorder.STATUS_PAUSE,
-                                'isAutoRecord': false
-                            });
                             this.logger.info(`${params.row.nickName} 暂停中。。。`);
                             try {
                                 Recorder.stop(this.cmdList[params.row.roomUrl]);
+                                this.liveInfoList[params.index]['recordStatus'] = Recorder.STATUS_PAUSE;
+                                this.liveInfoList[params.index]['isAutoRecord'] = false;
                             } catch (error) {
                                 this.showError("无法暂停");
                                 this.logger.error(`${params.row.nickName} 暂停出错了。。。`, error);
                             }
-                            this.cmdList[params.row.roomUrl] = null;
                         }
                     }
                 }),

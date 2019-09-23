@@ -47,14 +47,6 @@ function createWindow() {
             win.minimize()
         }
     });
-    let interval = setInterval(() => {
-        try {
-            console.log('LiveFactory.refreshRoomData()');
-            LiveFactory.refreshRoomData();
-        } catch (error) {
-            console.error('刷新房间信息失败', error);
-        }
-    }, 10000);
     win.on('closed', () => {
         Logger.init().info("window退出,把所有录制状态设为暂停录制,清除定时器");
         let list = Cache.readRoomList();
@@ -66,7 +58,6 @@ function createWindow() {
         Cache.writeRoomList(list);
         //todo 发送错误日志到邮箱
         win = null;
-        clearInterval(interval);
     })
 }
 

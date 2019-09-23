@@ -4,9 +4,9 @@ import router from './router'
 import store from './store'
 import 'iview/dist/styles/iview.css';
 import iview from 'iview';
+import Cache from "@/vendor/Cache";
 
 Vue.use(iview);
-
 Vue.prototype.recorder_timer = null;
 Vue.prototype.cmdList = {};
 

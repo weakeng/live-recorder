@@ -2,9 +2,9 @@ import ffmpeg from 'fluent-ffmpeg';
 import path from "path";
 
 class Recorder {
-    public static readonly STATUS_PAUSE=1;//暂停中
-    public static readonly STATUS_RECORDING=2;//正在录制
-    public static readonly STATUS_AWAIT_RECORD=3;//等待录制
+    public static readonly STATUS_PAUSE = 1;//暂停中
+    public static readonly STATUS_RECORDING = 2;//正在录制
+    public static readonly STATUS_AWAIT_RECORD = 3;//等待录制
 
     public onErr: (err: any) => void = function () {
     };
@@ -27,7 +27,7 @@ class Recorder {
             .outputOptions(
                 '-user-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.86 Safari/537.36',
                 '-c', 'copy',
-                '-t', '30'
+                '-t', '120'
             )
             .output(savePath)
             .on('error', (err) => {
@@ -39,8 +39,7 @@ class Recorder {
                 this.onEnd();
             })
             .on('stderr', (stderrLine) => {
-
-                console.log(stderrLine);
+                // console.log(stderrLine);
                 //todo 写入ffmpeg运行日志
             });
         command.run();
