@@ -1,6 +1,7 @@
+import {SiteJson, StreamJson} from "./Json";
 import Api from "./Api";
 
-abstract class Live implements Api{
+abstract class Live implements Api {
 
     public roomUrl: string = '';//房间地址
     protected roomId: number = 0;//真实房间号
@@ -14,15 +15,16 @@ abstract class Live implements Api{
         this.roomUrl = roomUrl;
     }
 
-     abstract getLiveUrl():any;
-     abstract refreshRoomData():void;
-     abstract getSiteName():string;
-     abstract getSiteIcon():string;
+    abstract getLiveUrl(): any;
 
+    abstract refreshRoomData(): void;
+
+    abstract getBaseSite(): SiteJson;
 
     public setRoomId(roomId: number) {
         this.roomId = roomId;
     }
+
     public getRoomId() {
         return this.roomId;
     }
@@ -30,6 +32,7 @@ abstract class Live implements Api{
     public setNickName(nickName: string) {
         this.nickName = nickName;
     }
+
     public getNickName() {
         return this.nickName;
     }
@@ -37,6 +40,7 @@ abstract class Live implements Api{
     public setHeadIcon(headIcon: string) {
         this.headIcon = headIcon;
     }
+
     public getHeadIcon() {
         return this.headIcon;
     }
@@ -44,12 +48,15 @@ abstract class Live implements Api{
     public setTitle(title: string) {
         this.title = title;
     }
+
     public getTitle() {
         return this.title;
     }
+
     public setCover(cover: string) {
         this.cover = cover;
     }
+
     public getCover() {
         return this.cover;
     }
@@ -57,6 +64,7 @@ abstract class Live implements Api{
     public setLiveStatus(liveStatus: boolean) {
         this.liveStatus = liveStatus;
     }
+
     public getLiveStatus() {
         return this.liveStatus;
     }

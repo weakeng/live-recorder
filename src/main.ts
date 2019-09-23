@@ -4,10 +4,14 @@ import router from './router'
 import store from './store'
 import 'iview/dist/styles/iview.css';
 import iview from 'iview';
+
 Vue.use(iview);
-Vue.prototype.recorder_timer=null;
+
+Vue.prototype.recorder_timer = null;
+Vue.prototype.cmdList = {};
+
 new Vue({
-  router,
-  store,
-  render: h => h(App)
+    router,
+    store,
+    render: h => h(App)
 }).$mount('#app');

@@ -1,23 +1,25 @@
 import Live from "./Live";
+import Http from "../Http";
+import {SiteJson} from "./Json";
 
 class DouYuLive extends Live {
-    public static readonly SITE_NAME = "斗鱼直播";
-    public static readonly SITE_CODE = "DouYuLive";
-    public static readonly SITE_ICON = "https://douyu.com/favicon.ico";
-    public static readonly MATCH_ROOM_URL = /.*/;
+    public static readonly SITE: SiteJson = {
+        SITE_NAME: 'CC直播',
+        SITE_CODE: 'CCLive',
+        SITE_ICON: 'https://cc.163.com/favicon.ico',
+        MATCH_ROOM_URL: /http(s)?:\/\/cc\.163\.com\/(\d+)/,
+        BASE_ROOM_URL: 'https://cc.163.com/%s',
+    };
 
-    getLiveUrl(): any {
-    }
-
-    getSiteIcon(): string {
-        return DouYuLive.SITE_ICON;
-    }
-
-    getSiteName(): string {
-        return DouYuLive.SITE_ICON;
+    getLiveUrl(): Array<any> {
+        return [];
     }
 
     refreshRoomData(): void {
+    }
+
+    getBaseSite(): SiteJson{
+        return DouYuLive.SITE;
     }
 }
 

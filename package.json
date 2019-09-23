@@ -20,6 +20,7 @@
     "ffmpeg-static": "^2.6.0",
     "fluent-ffmpeg": "^2.1.2",
     "iview": "^3.5.1",
+    "log4js": "^5.1.0",
     "query-string": "^6.8.3",
     "request": "^2.88.0",
     "request-promise": "^4.2.4",

@@ -1,29 +1,27 @@
-import Api from "./Api";
 import Live from "./Live";
 import Http from "../Http";
+import {SiteJson, StreamJson} from "./Json";
 
 class HuYaLive extends Live {
-    public static readonly SITE_NAME = "虎牙直播";
-    public static readonly SITE_CODE = "HuYaLive";
-    public static readonly SITE_ICON = "https://huya.com/favicon.ico";
-    public static readonly BASE_ROOM_URL = "https://www.huya.com/%s";
-    public static readonly MATCH_ROOM_URL = /https:\/\/(www\.)?huya\.com\/(\w+)/;
+    public static readonly SITE: SiteJson = {
+        SITE_NAME: '虎牙直播',
+        SITE_CODE: 'HuYaLive',
+        SITE_ICON: 'https://huya.com/favicon.ico',
+        MATCH_ROOM_URL: /https:\/\/(www\.)?huya\.com\/(\w+)/,
+        BASE_ROOM_URL: 'https://www.huya.com/%s',
+    };
 
     public constructor(roomUrl: string) {
         super(roomUrl);
     }
 
-    public getSiteName(): string {
-        return HuYaLive.SITE_NAME;
-    }
-
-    public getSiteIcon(): string {
-        return HuYaLive.SITE_ICON;
+    getBaseSite(): SiteJson {
+        return HuYaLive.SITE;
     }
 
     public async refreshRoomData() {
         let body = await Http.request({url: this.roomUrl}).catch(() => {
-            throw `获取房间信息失败,网络异常,${HuYaLive.SITE_NAME}(${this.roomUrl})`;
+            throw `获取房间信息失败,网络异常,${HuYaLive.SITE.SITE_NAME}(${this.roomUrl})`;
         });
         let match_title = body.match(/<h1 id="J_roomTitle" title="(.*?)">(.*?)<\/h1>/);
         let match_nick = body.match(/<h3 class="host-name" title="(.*?)">(.*?)<\/h3>/);
@@ -32,7 +30,7 @@ class HuYaLive extends Live {
         let match_config = body.match(/hyPlayerConfig = ([^;]+);/);
         let match_room_info = body.match(/var TT_ROOM_DATA = (.*?);/);
         if (!match_title) {
-            throw `获取房间信息失败,主播未开播或房间地址有误,${HuYaLive.SITE_NAME}(${this.roomUrl})`;
+            throw `获取房间信息失败,主播未开播或房间地址有误,${HuYaLive.SITE.SITE_NAME}(${this.roomUrl})`;
         }
         this.setTitle(match_title[1]);
         this.setNickName(match_nick[1]);
@@ -40,7 +38,7 @@ class HuYaLive extends Live {
         this.setCover(match_head[1]);
         let room = JSON.parse(match_room_info[1]);
         this.setRoomId(room['profileRoom']);
-        this.roomUrl = HuYaLive.BASE_ROOM_URL.replace(/%s/, room['profileRoom']);
+        this.roomUrl = HuYaLive.SITE.BASE_ROOM_URL.replace(/%s/, room['profileRoom']);
         let data = JSON.parse(match_config[1]);
         if (!data.stream) {
             this.setLiveStatus(false);
@@ -51,7 +49,7 @@ class HuYaLive extends Live {
 
     public async getLiveUrl() {
         let body = await Http.request({url: this.roomUrl}).catch(() => {
-            throw `获取直播源信息失败,网络异常,${HuYaLive.SITE_NAME}(${this.roomUrl})`;
+            throw `获取直播源信息失败,网络异常,${HuYaLive.SITE.SITE_NAME}(${this.roomUrl})`;
         });
         body = body.replace(/&amp;/g, 'A=========B');
         let match_config = body.match(/hyPlayerConfig = ([^;]+);/);
@@ -66,9 +64,9 @@ class HuYaLive extends Live {
                     iBitRate = iBitRate ? `_${iBitRate}` : '';
                     let url = urlList[i].sHlsUrl + '/' + urlList[i].sStreamName + iBitRate + '.' + urlList[i].sHlsUrlSuffix + '?' + urlList[i].sHlsAntiCode;
                     url = url.replace(/A=========B/g, '&amp;');
-                    let item = {
+                    let item: StreamJson = {
                         quality: rateList[j].sDisplayName,
-                        lineIndex: '线路' + urlList[i].iLineIndex,
+                        lineIndex: `${urlList[i].iLineIndex}`,
                         liveUrl: url
                     };
                     liveList.unshift(item);
@@ -76,7 +74,7 @@ class HuYaLive extends Live {
             }
             return liveList;
         } else {
-            throw `获取直播源信息失败！主播未开播或房间地址有误,${HuYaLive.SITE_NAME}(${this.roomUrl})`;
+            throw `获取直播源信息失败！主播未开播或房间地址有误,${HuYaLive.SITE.SITE_NAME}(${this.roomUrl})`;
         }
     }
 }

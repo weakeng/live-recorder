@@ -1,10 +1,6 @@
 <template>
     <div id="app">
         <Nav></Nav>
-        <!-- <div id="nav">
-          <router-link to="/">Home</router-link>|
-          <router-link to="/about">About</router-link>
-        </div>-->
         <Header></Header>
         <div class="main">
             <router-view></router-view>
@@ -18,20 +14,49 @@
     import Nav from "@/components/Nav.vue";
     import Header from "@/components/Header.vue";
     import Footer from "@/components/Footer.vue";
+    import Logger from "@/vendor/Logger";
+    import Recorder from "@/vendor/Recorder";
+    import Cache from "@/vendor/Cache";
     // import CCLive from "@/vendor/live/CCLive";
-
     export default Vue.extend({
         async mounted() {
-/*            let cclive = new CCLive('https://cc.163.com/47233523/');
-            await cclive.refreshRoomData();
-            let list = await cclive.getLiveUrl();
-            console.log(cclive, list);*/
+            // console.log('this.cmdList', this.cmdList, this.recorder_timer);
+            // let cclive = new CCLive('https://cc.163.com/47233523/');
+            // await cclive.refreshRoomData();
+            // let list = await cclive.getLiveUrl();
+            // console.log(cclive, list);
         },
         components: {
             Nav,
             Header,
             Footer
+        },
+        beforeDestroy() {
+            Logger.init().info("VUE-APP beforeDestroy");
+            if (this.recorder_timer) {
+                Logger.init().info(`VUE-APP 组件销毁前 清除定时器`);
+                clearInterval(this.recorder_timer);
+            }
+            for (let roomUrl in this.cmdList) {
+                if (this.cmdList.roomUrl) {
+                    Logger.init().info(`VUE-APP 组件销毁前 自动结束录制进程 ${roomUrl}`);
+                    Recorder.stop(this.cmdList.roomUrl);
+                }
+            }
+            Logger.init().info("VUE-APP beforeDestroy,把所有录制状态设为暂停录制");
+            let list = Cache.readRoomList();
+            list.forEach((item: any) => {
+                if (item['recordStatus'] == Recorder.STATUS_RECORDING) {
+                    item['recordStatus'] = Recorder.STATUS_PAUSE;
+                }
+            });
+            Cache.writeRoomList(list);
+        },
+        destroyed() {
+            Logger.init().info("VUE-APP 组件销毁了");
+            console.log("VUE-APP 组件销毁了");
         }
+
     });
 </script>
 <style lang="scss">

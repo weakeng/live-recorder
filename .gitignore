@@ -24,5 +24,6 @@ yarn-error.log*
 /dist_electron
 /a_src
 /iview-theme
-/resources/video
+/resources
+
 

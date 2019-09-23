@@ -3,7 +3,7 @@
     <div class="list">
       <a class="item active">
         <div class="menu-icon">
-          <Icon type="md-radio-button-on" size="55" color="#FFF" />
+          <Icon type="md-radio-button-on" size="55" color="#FFF"></Icon>
         </div>
         <div class="menu-title">
           <span class="title">直播录制</span>
@@ -11,7 +11,7 @@
       </a>
       <a class="item">
         <div class="menu-icon">
-          <Icon type="md-videocam" size="55" color="#FFF" />
+          <Icon type="md-videocam" size="55" color="#FFF"></Icon>
         </div>
         <div class="menu-title">
           <span class="title">视频管理</span>
@@ -19,7 +19,7 @@
       </a>
       <a class="item">
         <div class="menu-icon">
-          <Icon type="ios-cut" size="55" color="#FFF" />
+          <Icon type="ios-cut" size="55" color="#FFF"></Icon>
         </div>
         <div class="menu-title">
           <span class="title">视频合成</span>
@@ -27,7 +27,7 @@
       </a>
       <a class="item">
         <div class="menu-icon">
-          <Icon type="md-settings" size="55" color="#FFF" />
+          <Icon type="md-settings" size="55" color="#FFF"></Icon>
         </div>
         <div class="menu-title">
           <span class="title">软件设置</span>
