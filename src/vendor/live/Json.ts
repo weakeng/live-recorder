@@ -19,7 +19,8 @@ interface LiveInfoJson {
     headIcon: string,
     title: string,
     roomUrl: string,
-    liveStatus: boolean,
+    oldStatus:boolean,//上次检测直播状态
+    liveStatus: boolean,//这次检测直播状态
     isAutoRecord: boolean,
     recordStatus: number,
     addTime: number,

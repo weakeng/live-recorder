@@ -7,11 +7,11 @@ import Util from "../../vendor/Util";
 import Logger from "../../vendor/Logger";
 import Live from "../../vendor/live/Live";
 import {LiveInfoJson, StreamJson} from "@/vendor/live/Json";
-
+import fs from "fs";
 export default Vue.extend({
     mounted: function () {
-        this.refreshRoomData();
         this.siteCode = this.siteNameList[0]["siteCode"];
+        this.refreshRoomData();
     },
     data() {
         return {
@@ -37,6 +37,20 @@ export default Vue.extend({
                 this.logger.error('重复录制了...', roomUrl);
                 return;
             }
+
+            let cmdNum = 0;
+            for (let index in this.cmdList) {
+                if (this.cmdList[index]) cmdNum++;
+            }
+
+            if (cmdNum > 10) {
+                this.liveInfoList[index].isAutoRecord = false;
+                this.liveInfoList[index].recordStatus = false;
+                this.showInfo('最多10个任务，达到录制上限自动暂停。。。');
+                this.logger.error('最多10个任务，达到录制上限自动暂停。。。...', roomUrl);
+                return;
+            }
+
             let list: Array<StreamJson> = [];
             let live: Live;
             try {
@@ -120,6 +134,7 @@ export default Vue.extend({
                             room.nickName = live.getNickName();
                             room.headIcon = live.getHeadIcon();
                             room.title = live.getTitle() || room.title;
+                            room.oldStatus = room.liveStatus;
                             room.liveStatus = live.getLiveStatus();
                         } catch (error) {
                             this.logger.error({msg: '刷新房间信息失败！', roomUrl: room.roomUrl, error: error});
@@ -147,7 +162,27 @@ export default Vue.extend({
                                 });
                             }
                         }
+                        if (!room.oldStatus && room.liveStatus) {
+                            const notification = {
+                                title: `${room.siteName}(${room.nickName})开播了`,
+                                body: '主播开播了，快去给心仪的主播录制吧！',
+                                icon: room.headIcon,
+                                silent: true,
+                                requireInteraction: true,
+                            };
+                            new Notification(notification.title, notification)
+                        } else if (room.oldStatus && !room.liveStatus) {
+                            const notification = {
+                                title: `${room.siteName}(${room.nickName})下播了`,
+                                body: '主播下播了，快去看看自己录制的视频吧！',
+                                icon: room.headIcon,
+                                silent: true,
+                                requireInteraction: true,
+                            };
+                            new Notification(notification.title, notification)
+                        }
                     })).then(() => {
+                        Cache.writeRoomList(this.liveInfoList);
                     }).catch((err) => {
                         this.logger.info(`Promise.all : error `, err);
                     });
@@ -157,11 +192,11 @@ export default Vue.extend({
         remove(index: number) {
             if (confirm("确定要删除该任务吗")) {
                 this.liveInfoList.splice(index, 1);
+                Cache.writeRoomList(this.liveInfoList);
             }
         },
 
         async sureAddLive() {
-
             let live: Live;
             if (this.addLive_method === "输入网址") {
                 try {
@@ -193,6 +228,7 @@ export default Vue.extend({
                     headIcon: live.getHeadIcon(),
                     title: live.getTitle(),
                     roomUrl: live.roomUrl,
+                    oldStatus: live.getLiveStatus(),
                     liveStatus: live.getLiveStatus(),
                     isAutoRecord: false,
                     recordStatus: Recorder.STATUS_PAUSE,
@@ -206,6 +242,7 @@ export default Vue.extend({
                     }
                 }
                 this.liveInfoList.unshift(item);
+                Cache.writeRoomList(this.liveInfoList);
                 //@ts-ignore
                 this.cmdList[live.roomUrl] = null;
             } catch (error) {
@@ -251,7 +288,7 @@ export default Vue.extend({
                 },
                 {
                     title: "主播名称",
-                    align: "center",
+                    align: "left",
                     key: "nickName",
                     render: (h: any, params: any) => {
                         return h("div", {attrs: {style: ""}}, [
@@ -278,7 +315,7 @@ export default Vue.extend({
                 },
                 {
                     title: "直播标题",
-                    align: "center",
+                    align: "left",
                     key: "title",
                     width: 180,
                 },
@@ -324,7 +361,7 @@ export default Vue.extend({
                 {
                     title: "操作",
                     key: "action",
-                    width: 100,
+                    width: 125,
                     align: "center",
                     render: (h: any, params: any) => {
                         // @ts-ignore
@@ -437,6 +474,31 @@ export default Vue.extend({
                             this.remove(params.index);
                         }
                     }
+                }),
+                h("Button", {
+                    props: {
+                        type: "warning",
+                        size: "small",
+                        shape: "circle",
+                        icon: "ios-folder",
+                    },
+                    style: {
+                        marginRight: "5px",
+                    },
+                    on: {
+                        click: () => {
+                            const {shell} = require("electron").remote;
+                            let $siteName = params.row.siteName;
+                            let $nickName = Util.filterEmoji(params.row.nickName);
+                            let savePath = path.join(process.cwd(), "resources/video", $siteName, $nickName);
+                            if (fs.existsSync(savePath)) {
+                                shell.showItemInFolder(savePath);
+                            }else{
+                                this.showInfo("录制文件为空");
+                            }
+
+                        }
+                    }
                 })
             ]);
         },
@@ -456,3 +518,4 @@ export default Vue.extend({
         }
     }
 });
+

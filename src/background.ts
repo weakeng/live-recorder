@@ -51,9 +51,7 @@ function createWindow() {
         Logger.init().info("window退出,把所有录制状态设为暂停录制,清除定时器");
         let list = Cache.readRoomList();
         list.forEach((item: any) => {
-            if (item['recordStatus'] == 2) {
-                item['recordStatus'] = 1;
-            }
+            item['recordStatus'] = 1;
         });
         Cache.writeRoomList(list);
         //todo 发送错误日志到邮箱

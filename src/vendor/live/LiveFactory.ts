@@ -86,6 +86,7 @@ class LiveFactory {
                     headIcon: live.getHeadIcon() || item['headIcon'],
                     title: live.getTitle() || item['title'],
                     roomUrl: live.roomUrl,
+                    oldStatus:item['liveStatus'],
                     liveStatus: live.getLiveStatus(),
                     isAutoRecord: item['isAutoRecord'] || false,
                     recordStatus: item['recordStatus'] || 1,
