@@ -37,6 +37,7 @@
                 icon: 'https://yy.com/favicon.ico',
                 silent: true,
                 requireInteraction: true,
+                sticky:true,
             };
             new Notification(notification.title, notification);
 

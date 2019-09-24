@@ -8,6 +8,7 @@ import Logger from "../../vendor/Logger";
 import Live from "../../vendor/live/Live";
 import {LiveInfoJson, StreamJson} from "@/vendor/live/Json";
 import fs from "fs";
+
 export default Vue.extend({
     mounted: function () {
         this.siteCode = this.siteNameList[0]["siteCode"];
@@ -169,8 +170,10 @@ export default Vue.extend({
                                 icon: room.headIcon,
                                 silent: true,
                                 requireInteraction: true,
+                                sticky: true,
                             };
-                            new Notification(notification.title, notification)
+                            new Notification(notification.title, notification);
+                            this.logger.debug(`${room.siteName}(${room.nickName})开播了`);
                         } else if (room.oldStatus && !room.liveStatus) {
                             const notification = {
                                 title: `${room.siteName}(${room.nickName})下播了`,
@@ -178,8 +181,10 @@ export default Vue.extend({
                                 icon: room.headIcon,
                                 silent: true,
                                 requireInteraction: true,
+                                sticky: true,
                             };
-                            new Notification(notification.title, notification)
+                            new Notification(notification.title, notification);
+                            this.logger.debug(`${room.siteName}(${room.nickName})下播了`);
                         }
                     })).then(() => {
                         Cache.writeRoomList(this.liveInfoList);
@@ -493,7 +498,7 @@ export default Vue.extend({
                             let savePath = path.join(process.cwd(), "resources/video", $siteName, $nickName);
                             if (fs.existsSync(savePath)) {
                                 shell.showItemInFolder(savePath);
-                            }else{
+                            } else {
                                 this.showInfo("录制文件为空");
                             }
 

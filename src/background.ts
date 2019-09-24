@@ -52,6 +52,8 @@ function createWindow() {
         let list = Cache.readRoomList();
         list.forEach((item: any) => {
             item['recordStatus'] = 1;
+            item['liveStatus'] = false;
+            item['oldStatus'] = false;
         });
         Cache.writeRoomList(list);
         //todo 发送错误日志到邮箱

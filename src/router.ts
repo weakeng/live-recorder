@@ -1,23 +1,31 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import Home from './views/Home/Home.vue'
+import Video from './views/Video/Video.vue'
+import Setting from './views/Setting/Setting.vue'
 
 Vue.use(Router);
 
 export default new Router({
     routes: [
         {
-            path: '/',
+            path: '/home',
             name: 'home',
             component: Home
         },
         {
             path: '/video',
-            name: 'Video',
-            // route level code-splitting
-            // this generates a separate chunk (about.[hash].js) for this route
-            // which is lazy-loaded when the route is visited.
-            component: () => import(/* webpackChunkName: "about" */ './views/Video/Video.vue')
-        }
+            name: 'video',
+            component: Video,
+        },
+        {
+            path: '/setting',
+            name: 'setting',
+            component: Setting,
+        },
+        {
+            path: '*',
+            redirect: '/home'
+        },
     ]
 })
