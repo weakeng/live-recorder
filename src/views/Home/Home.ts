@@ -198,6 +198,7 @@ export default Vue.extend({
                     recordStatus: Recorder.STATUS_PAUSE,
                     addTime: new Date().getTime(),
                 };
+                // console.log(live);
                 for (let i = 0; i < this.liveInfoList.length; i++) {
                     if (this.liveInfoList[i].roomUrl === live.roomUrl) {
                         this.showInfo("该主播已存在。。。");

@@ -20,7 +20,7 @@ class HuYaLive extends Live {
     }
 
     public async refreshRoomData() {
-        let body = await Http.request({url: this.roomUrl}).catch(() => {
+        let body = await Http.request({url: this.roomUrl,'header': {Referer: 'https://www.huya.com'}}).catch(() => {
             throw `获取房间信息失败,网络异常,${HuYaLive.SITE.SITE_NAME}(${this.roomUrl})`;
         });
         let match_title = body.match(/<h1 id="J_roomTitle" title="(.*?)">(.*?)<\/h1>/);
@@ -32,6 +32,7 @@ class HuYaLive extends Live {
         if (!match_title) {
             throw `获取房间信息失败,主播未开播或房间地址有误,${HuYaLive.SITE.SITE_NAME}(${this.roomUrl})`;
         }
+
         this.setTitle(match_title[1]);
         this.setNickName(match_nick[1]);
         this.setHeadIcon(match_head[1]);

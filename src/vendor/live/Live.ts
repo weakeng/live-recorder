@@ -11,7 +11,7 @@ abstract class Live implements Api {
     protected cover: string = '';//直播封面
     protected liveStatus: boolean = false;//直播状态
 
-    protected constructor(roomUrl: string) {
+    public constructor(roomUrl: string) {
         this.roomUrl = roomUrl;
     }
 

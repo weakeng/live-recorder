@@ -17,14 +17,14 @@
     import Logger from "@/vendor/Logger";
     import Recorder from "@/vendor/Recorder";
     import Cache from "@/vendor/Cache";
-    import YYLive from "@/vendor/live/YYLive";
-
+    import HuaJiaoLive from "@/vendor/live/HuaJiaoLive";
     export default Vue.extend({
         async mounted() {
-            let cclive = new YYLive('https://www.yy.com/22490906');
+            let cclive = new HuaJiaoLive('https://www.huajiao.com/l/290235086');
             await cclive.refreshRoomData();
             let list = await cclive.getLiveUrl();
-            console.log(cclive, list);
+            console.log(cclive);
+
         },
         components: {
             Nav,
