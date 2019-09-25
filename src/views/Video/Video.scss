@@ -1,0 +1,41 @@
+.video {
+  display: flex;
+  height: 483px;
+  flex-direction: column;
+
+  .head {
+    height: 52px;
+    padding: 10px
+  }
+
+  .content {
+    flex: 1;
+    overflow: auto;
+
+    &::-webkit-scrollbar {
+      width: 9px;
+      height: 9px;
+    }
+
+    &::-webkit-scrollbar-track {
+      width: 6px;
+      background-color: #0d1b20;
+      -webkit-border-radius: 2em;
+      -moz-border-radius: 2em;
+      border-radius: 2em;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background-color: #606d71;
+      background-clip: padding-box;
+      min-height: 28px;
+      -webkit-border-radius: 2em;
+      -moz-border-radius: 2em;
+      border-radius: 2em;
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+      background-color: #fff;
+    }
+  }
+}

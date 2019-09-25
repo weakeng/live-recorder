@@ -3,14 +3,42 @@ import path from "path";
 import Util from "@/vendor/Util";
 import fs from "fs";
 import LiveFactory from "@/vendor/live/LiveFactory";
+import Cache from "@/vendor/Cache";
+
 export default Vue.extend({
+    mounted() {
+        let setting = Cache.getConfig();
+        let savePath = path.join(process.cwd(), "resources/video");
+        Util.readFileList(savePath, this.fileList);
+        this.fileList.sort((file1: any, file2: any) => {
+            return file2['time'] - file1['time'];
+        });
+        this.fileList.forEach((item) => {
+            let vo = `${item['siteName']}-${item['nickName']}`;
+            //@ts-ignore
+            if (this.nickNameList.indexOf(vo) < 0) {
+                //@ts-ignore
+                this.nickNameList.push(vo);
+            }
+            //@ts-ignore
+            this.fileListArr[vo] = this.fileListArr[vo] ? this.fileListArr[vo] : [];
+            //@ts-ignore
+            this.fileListArr[vo].push(item);
+        });
+        this.fileListTemp = this.fileList;
+        // console.log(this.fileListArr);
+    },
     data() {
         return {
-
             fileList: [],
+            fileListTemp: [],
+            fileListArr: [],
+            nickNameList: [],
+            dateText: '',
+            nickName: '',
             headTable: [
                 {
-                    width:100,
+                    width: 100,
                     title: '直播平台',
                     key: 'siteName',
                     //@ts-ignore
@@ -21,14 +49,14 @@ export default Vue.extend({
                     },
                 },
                 {
-                    width:130,
-                    align:'center',
+                    width: 130,
+                    align: 'center',
                     title: '主播名称',
                     key: 'nickName'
                 },
                 {
                     title: '文件名称',
-                    align:'center',
+                    align: 'center',
                     key: 'file',
                     render: (h: any, params: any) => {
                         return h('div', [
@@ -42,15 +70,15 @@ export default Vue.extend({
                     }
                 },
                 {
-                    width:150,
+                    width: 150,
                     title: '创建时间',
-                    align:'center',
+                    align: 'center',
                     key: 'date'
                 },
                 {
-                    width:90,
+                    width: 90,
                     title: '文件大小',
-                    align:'center',
+                    align: 'center',
                     key: 'size'
                 },
                 {
@@ -67,14 +95,56 @@ export default Vue.extend({
             ]
         }
     },
-    mounted() {
-        let savePath = path.join(process.cwd(), "resources/video");
-        Util.readFileList(savePath, this.fileList);
-        this.fileList.sort((file1: any, file2: any) => {
-            return file2['time'] - file1['time'];
-        });
-    },
     methods: {
+        nickChange() {
+            if (this.nickName) {
+                //@ts-ignore
+                let fileList = this.fileListArr[this.nickName];
+                if (this.dateText) {
+                    fileList = [];
+                    //@ts-ignore
+                    this.fileListArr[this.nickName].forEach((item: any) => {
+                        let date1 = new Date(item.time);
+                        let date2 = new Date(this.dateText);
+                        if (date1.getFullYear() == date2.getFullYear() && date1.getMonth() == date2.getMonth() && date1.getDate() == date2.getDate()) {
+                            fileList.push(item);
+                        }
+                    });
+                }
+                this.fileList = fileList;
+            }
+        },
+        dateChange() {
+            if (this.dateText) {
+                //@ts-ignore
+                let fileList = [];
+                //@ts-ignore
+                this.fileListTemp.forEach((item: any) => {
+                    let date1 = new Date(item.time);
+                    let date2 = new Date(this.dateText);
+                    if (date1.getFullYear() == date2.getFullYear() && date1.getMonth() == date2.getMonth() && date1.getDate() == date2.getDate()) {
+                        if (this.nickName) {
+                            if (this.nickName == `${item['siteName']}-${item['nickName']}`) {
+                                fileList.push(item);
+                            }
+                        } else {
+                            fileList.push(item);
+                        }
+                    }
+                });
+                //@ts-ignore
+                this.fileList = fileList;
+            }
+        },
+        resetData() {
+            this.fileList = this.fileListTemp;
+            this.nickName = '';
+            this.dateText = '';
+        },
+        clearDate() {
+            this.dateText = '';
+            this.nickChange();
+        },
         renderAction(h: any, params: any) {
             return h("div", [
                 h("Button", {
@@ -88,7 +158,7 @@ export default Vue.extend({
                         marginRight: "5px",
                     },
                     on: {
-                        click:() => {
+                        click: () => {
                             require("electron").shell.openExternal(params.row.filePath);
                         }
                     }
@@ -130,7 +200,7 @@ export default Vue.extend({
                     },
                     on: {
                         click: () => {
-                            const { shell } = require("electron").remote;
+                            const {shell} = require("electron").remote;
                             let path = params.row.filePath;
                             if (fs.existsSync(path)) {
                                 shell.showItemInFolder(path);

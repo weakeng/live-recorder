@@ -1,7 +1,6 @@
 'use strict';
 
 import {app, protocol, BrowserWindow, ipcMain} from 'electron'
-import LiveFactory from './vendor/live/LiveFactory';
 import Cache from "./vendor/Cache";
 import Logger from "./vendor/Logger";
 import {

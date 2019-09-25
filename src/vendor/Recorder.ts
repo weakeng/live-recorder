@@ -1,5 +1,6 @@
 import ffmpeg from 'fluent-ffmpeg';
 import path from "path";
+import Cache from './Cache';
 
 class Recorder {
     public static readonly STATUS_PAUSE = 1;//暂停中
@@ -23,11 +24,13 @@ class Recorder {
     }
 
     public record(liveUrl: string, savePath: string) {
+        let setting = Cache.getConfig();
+        let time = setting.videoTime * 60;
         const command = ffmpeg(liveUrl)
             .outputOptions(
                 '-user-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.86 Safari/537.36',
                 '-c', 'copy',
-                '-t', '1200'
+                '-t', `${time}`
             )
             .output(savePath)
             .on('error', (err) => {

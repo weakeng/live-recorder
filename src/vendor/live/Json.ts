@@ -19,12 +19,19 @@ interface LiveInfoJson {
     headIcon: string,
     title: string,
     roomUrl: string,
-    oldStatus:boolean,//上次检测直播状态
+    oldStatus: boolean,//上次检测直播状态
     liveStatus: boolean,//这次检测直播状态
     isAutoRecord: boolean,
     recordStatus: number,
     addTime: number,
 }
 
-export {SiteJson, StreamJson,LiveInfoJson};
+interface settingJson {
+    savePath: string,
+    refreshTime: number,
+    videoTime: number,
+    notice: boolean,
+}
+
+export {SiteJson, StreamJson, LiveInfoJson,settingJson};
 

@@ -3,8 +3,8 @@
         <Nav></Nav>
         <Header></Header>
         <div class="main">
-            <keep-alive>
-            <router-view></router-view>
+            <keep-alive include="home">
+                <router-view></router-view>
             </keep-alive>
         </div>
         <Footer></Footer>
@@ -21,9 +21,9 @@
     import Cache from "@/vendor/Cache";
     // import HuaJiaoLive from "@/vendor/live/HuaJiaoLive";
     export default Vue.extend({
-        data(){
+        data() {
             return {
-                cachedViews:['home']
+                cachedViews: ['home']
             }
         },
         async mounted() {
@@ -44,14 +44,9 @@
                 icon: 'https://yy.com/favicon.ico',
                 silent: true,
                 requireInteraction: true,
-                sticky:true,
+                sticky: true,
             };
             new Notification(notification.title, notification);
-
-            if (this.recorder_timer) {
-                Logger.init().info(`组件销毁 清除定时器`);
-                clearInterval(this.recorder_timer);
-            }
             for (let roomUrl in this.cmdList) {
                 if (this.cmdList.roomUrl) {
                     Logger.init().info(`销毁前 自动结束录制进程 ${roomUrl}`);
@@ -77,6 +72,7 @@
         height: 100%;
         padding: 0;
         margin: 0;
+        user-select: none;
     }
 
     #app {

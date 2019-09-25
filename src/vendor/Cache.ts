@@ -1,8 +1,10 @@
 import fs from 'fs';
 import path from 'path';
+import {settingJson} from "@/vendor/live/Json";
 
 class Cache {
     static readonly ROOM_LIST_FILE = path.join(process.cwd(), "resources/cache/", "room_list.json");
+    static readonly CONFIG_FILE = path.join(process.cwd(), "resources/cache/", "config.json");
 
     public static set(fileName: string, data: any) {
         fs.writeFileSync(fileName, JSON.stringify(data));
@@ -17,6 +19,14 @@ class Cache {
             data = [];
         }
         return data;
+    }
+
+    public static writeConfig(config: settingJson) {
+        this.set(Cache.CONFIG_FILE, config);
+    }
+
+    public static getConfig(): settingJson {
+        return this.get(Cache.CONFIG_FILE);
     }
 
     public static writeRoomList(roomList: any) {
@@ -49,7 +59,7 @@ class Cache {
         }
     }
 
-    public static addRoom(siteName: string, siteIcon: string, nickName: string, headIcon: string, title: string, roomUrl: string, liveStatus: boolean, isAutoRecord: boolean, recordStatus: number,addTime:number) {
+    public static addRoom(siteName: string, siteIcon: string, nickName: string, headIcon: string, title: string, roomUrl: string, liveStatus: boolean, isAutoRecord: boolean, recordStatus: number, addTime: number) {
         let roomList = Cache.readRoomList();
         roomList.forEach((vo: any) => {
             if (vo['roomUrl'] === roomUrl) {
@@ -66,7 +76,7 @@ class Cache {
             'liveStatus': liveStatus,
             'isAutoRecord': isAutoRecord,
             'recordStatus': recordStatus,
-            'addTime':addTime
+            'addTime': addTime
         };
         roomList.push(room);
         Cache.writeRoomList(roomList);

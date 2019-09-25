@@ -19,7 +19,6 @@ declare global {
 
 declare module "vue/types/vue" {
     interface Vue {
-        recorder_timer: any;
         cmdList: any
     }
 }
