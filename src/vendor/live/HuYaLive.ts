@@ -7,7 +7,7 @@ class HuYaLive extends Live {
         SITE_NAME: '虎牙直播',
         SITE_CODE: 'HuYaLive',
         SITE_ICON: 'https://huya.com/favicon.ico',
-        MATCH_ROOM_URL: /https:\/\/(www\.)?huya\.com\/(\w+)/,
+        MATCH_ROOM_URL: /^https:\/\/(www\.)?huya\.com\/(\w+)/,
         BASE_ROOM_URL: 'https://www.huya.com/%s',
     };
 

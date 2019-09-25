@@ -7,7 +7,7 @@ class YYLive extends Live {
         SITE_NAME: 'YY直播',
         SITE_CODE: 'YYLive',
         SITE_ICON: 'https://yy.com/favicon.ico',
-        MATCH_ROOM_URL: /https:\/\/(www\.)?yy\.com\/(\w+)/,
+        MATCH_ROOM_URL: /^https:\/\/(www\.)?yy\.com\/(\w+)/,
         BASE_ROOM_URL: 'https://www.yy.com/%s',
     };
 

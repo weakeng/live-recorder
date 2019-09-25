@@ -7,7 +7,7 @@ class InkeLive extends Live {
         SITE_NAME: '映客直播',
         SITE_CODE: 'InkeLive',
         SITE_ICON: 'http://inke.cn/favicon.ico',
-        MATCH_ROOM_URL: /http:\/\/(www\.)?inke\.cn\/live\.html\?uid=(\d+)/,
+        MATCH_ROOM_URL: /^http:\/\/(www\.)?inke\.cn\/live\.html\?uid=(\d+)/,
         BASE_ROOM_URL: 'http://inke.cn/live.html?uid=%s',
     };
 

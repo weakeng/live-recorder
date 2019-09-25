@@ -7,7 +7,7 @@ class CCLive extends Live {
         SITE_NAME: 'CC直播',
         SITE_CODE: 'CCLive',
         SITE_ICON: 'https://cc.163.com/favicon.ico',
-        MATCH_ROOM_URL: /http(s)?:\/\/cc\.163\.com\/(\d+)/,
+        MATCH_ROOM_URL: /^http(s)?:\/\/cc\.163\.com\/(\d+)/,
         BASE_ROOM_URL: 'https://cc.163.com/%s',
     };
 

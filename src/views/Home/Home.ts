@@ -8,11 +8,14 @@ import Logger from "../../vendor/Logger";
 import Live from "../../vendor/live/Live";
 import {LiveInfoJson, StreamJson} from "@/vendor/live/Json";
 import fs from "fs";
+import store from "@/store";
+
 
 export default Vue.extend({
     mounted: function () {
         this.siteCode = this.siteNameList[0]["siteCode"];
         this.refreshRoomData();
+        console.log(this.liveInfoList, this.cmdList);
     },
     data() {
         return {
@@ -30,7 +33,6 @@ export default Vue.extend({
     },
     beforeDestroy() {
         Cache.writeRoomList(this.liveInfoList);
-        this.recorder_timer && clearInterval(this.recorder_timer);
     },
     methods: {
         async recordRoomUrl(index: number, roomUrl: string) {
@@ -124,9 +126,14 @@ export default Vue.extend({
             this.cmdList[roomUrl] = recorder.record(list[0]["liveUrl"], savePath); //以roomUrl为唯一索引cmd数组
         },
         refreshRoomData() {
+            let id = new Date().getSeconds();
+            let timer = this.$store.state.timer;
             // @ts-ignore
-            if (!this.recorder_timer) {
-                this.recorder_timer = setInterval(async () => {
+            if (!timer) {
+                let interval = setInterval(async () => {
+                    // this.showInfo(`执行定时器:${id}`);
+                    // this.logger.debug(`执行定时器:${id}`);
+                    Cache.writeRoomList(this.liveInfoList);
                     Promise.all(this.liveInfoList.map(async (room: LiveInfoJson, index: number) => {
                         // this.logger.info(`Promise.all :${room.roomUrl} ${index}`);
                         let live = LiveFactory.getLive(room.roomUrl);
@@ -187,11 +194,11 @@ export default Vue.extend({
                             this.logger.debug(`${room.siteName}(${room.nickName})下播了`);
                         }
                     })).then(() => {
-                        Cache.writeRoomList(this.liveInfoList);
                     }).catch((err) => {
                         this.logger.info(`Promise.all : error `, err);
                     });
                 }, 10000);
+                store.commit('setTimer', interval);
             }
         },
         remove(index: number) {

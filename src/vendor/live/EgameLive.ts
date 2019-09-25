@@ -7,7 +7,7 @@ class EgameLive extends Live {
         SITE_NAME: '企鹅电竞',
         SITE_CODE: 'EgameLive',
         SITE_ICON: 'https://egame.qq.com/favicon.ico',
-        MATCH_ROOM_URL: /http(s)?:\/\/egame\.qq\.com\/(\d+)/,
+        MATCH_ROOM_URL: /^http(s)?:\/\/egame\.qq\.com\/(\d+)/,
         BASE_ROOM_URL: 'https://egame.qq.com/%s',
     };
 

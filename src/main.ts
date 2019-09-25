@@ -4,11 +4,13 @@ import router from './router'
 import store from './store'
 import 'iview/dist/styles/iview.css';
 import iview from 'iview';
-import Cache from "@/vendor/Cache";
+import Util from "@/vendor/Util";
+import path from "path";
 
 Vue.use(iview);
 Vue.prototype.recorder_timer = null;
 Vue.prototype.cmdList = {};
+
 
 new Vue({
     router,

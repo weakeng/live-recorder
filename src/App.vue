@@ -3,7 +3,9 @@
         <Nav></Nav>
         <Header></Header>
         <div class="main">
+            <keep-alive>
             <router-view></router-view>
+            </keep-alive>
         </div>
         <Footer></Footer>
     </div>
@@ -19,6 +21,11 @@
     import Cache from "@/vendor/Cache";
     // import HuaJiaoLive from "@/vendor/live/HuaJiaoLive";
     export default Vue.extend({
+        data(){
+            return {
+                cachedViews:['home']
+            }
+        },
         async mounted() {
             // let cclive = new HuaJiaoLive('https://www.huajiao.com/l/290235086');
             // await cclive.refreshRoomData();

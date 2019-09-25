@@ -39,6 +39,7 @@
         },
         methods: {
             selectMenu(index: number) {
+                if(this.activeIndex===index) return;
                 this.activeIndex = index;
                 switch (index) {
                     case 0:

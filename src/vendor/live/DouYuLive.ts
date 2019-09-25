@@ -7,7 +7,7 @@ class DouYuLive extends Live {
         SITE_NAME: '斗鱼直播',
         SITE_CODE: 'DouYuLive',
         SITE_ICON: 'https://douyu.com/favicon.ico',
-        MATCH_ROOM_URL: /https:\/\/(www\.)?douyu\.com\/(\w+)/,
+        MATCH_ROOM_URL: /^https:\/\/(www\.)?douyu\.com\/(\w+)/,
         BASE_ROOM_URL: 'https://www.douyu.com/%s',
     };
     static readonly API_ROOM_INFO = "https://open.douyucdn.cn/api/RoomApi/room/%s";
