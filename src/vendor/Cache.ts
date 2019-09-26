@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import {settingJson} from "@/vendor/live/Json";
+import Util from './Util';
 
 class Cache {
     static readonly ROOM_LIST_FILE = path.join(process.cwd(), "resources/cache/", "room_list.json");
@@ -26,7 +27,21 @@ class Cache {
     }
 
     public static getConfig(): settingJson {
-        return this.get(Cache.CONFIG_FILE);
+        let data: settingJson;
+        if (fs.existsSync(Cache.CONFIG_FILE)) {
+            let str = fs.readFileSync(Cache.CONFIG_FILE, 'utf-8');
+            data = JSON.parse(String(str)) || []
+        } else {
+            data = {
+                "savePath": path.join(process.cwd(), "resources/video"),
+                "refreshTime": 10,
+                "videoTime": 20,
+                "notice": true
+            };
+            Util.mkdirsSync(data.savePath);
+            this.set(Cache.CONFIG_FILE, data);
+        }
+        return data;
     }
 
     public static writeRoomList(roomList: any) {
@@ -57,29 +72,6 @@ class Cache {
                 return;
             }
         }
-    }
-
-    public static addRoom(siteName: string, siteIcon: string, nickName: string, headIcon: string, title: string, roomUrl: string, liveStatus: boolean, isAutoRecord: boolean, recordStatus: number, addTime: number) {
-        let roomList = Cache.readRoomList();
-        roomList.forEach((vo: any) => {
-            if (vo['roomUrl'] === roomUrl) {
-                return;
-            }
-        });
-        let room = {
-            'siteName': siteName,
-            'nickName': nickName,
-            'siteIcon': siteIcon,
-            'headIcon': headIcon,
-            'title': title,
-            'roomUrl': roomUrl,
-            'liveStatus': liveStatus,
-            'isAutoRecord': isAutoRecord,
-            'recordStatus': recordStatus,
-            'addTime': addTime
-        };
-        roomList.push(room);
-        Cache.writeRoomList(roomList);
     }
 }
 

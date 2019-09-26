@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-
+import Cache from './Cache';
 class Util {
     public static mkdirsSync(dirname: string) {
         if (fs.existsSync(dirname)) {
@@ -17,7 +17,12 @@ class Util {
         return str.replace(/\uD83C[\uDF00-\uDFFF]|\uD83D[\uDC00-\uDE4F]/g, "");
     }
 
-
+    public static getSavePath(){
+        let setting=Cache.getConfig();
+        let savePath =path.join(process.cwd(), "resources/video/直播录制小助手视频");
+        if(fs.existsSync(setting.savePath)) savePath=path.join(setting.savePath,'直播录制小助手视频');
+        return savePath;
+    }
     public static readFileList(dir:string, filesList:{}[]) {
         const files = fs.readdirSync(dir);
         files.forEach((item, index) => {

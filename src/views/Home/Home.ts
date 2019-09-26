@@ -8,6 +8,7 @@ import Logger from "../../vendor/Logger";
 import Live from "../../vendor/live/Live";
 import {LiveInfoJson, StreamJson} from "@/vendor/live/Json";
 import fs from "fs";
+import moment from "moment";
 
 export default Vue.extend({
     name: "home",
@@ -41,6 +42,7 @@ export default Vue.extend({
                 this.logger.error('重复录制了...', roomUrl);
                 return;
             }
+            this.cmdList[roomUrl]=true;
 
             let cmdNum = 0;
             for (let index in this.cmdList) {
@@ -52,6 +54,7 @@ export default Vue.extend({
                 this.liveInfoList[index].recordStatus = false;
                 this.showInfo('最多10个任务，达到录制上限自动暂停。。。');
                 this.logger.error('最多10个任务，达到录制上限自动暂停。。。...', roomUrl);
+                this.cmdList[roomUrl]=null;
                 return;
             }
 
@@ -62,12 +65,14 @@ export default Vue.extend({
                 await live.refreshRoomData();
                 if (!live.getLiveStatus()) {
                     this.showError('主播暂未开播!');
+                    this.cmdList[roomUrl]=null;
                     return;
                 }
                 list = await live.getLiveUrl();
             } catch (error) {
                 this.logger.error('获取直播源失败', error);
                 this.showError('获取直播源失败');
+                this.cmdList[roomUrl]=null;
                 return;
             }
             let recorder = new Recorder(roomUrl);
@@ -108,24 +113,25 @@ export default Vue.extend({
                     this.logger.info(`recorder.onEnd ${live.getNickName()} ${recorder.id} 可能已经被删除。。。`);
                 }
             };
-            let date = new Date();
             let $siteName = live.getBaseSite().SITE_NAME;
             let $nickName = Util.filterEmoji(live.getNickName());
-            let $date = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
-            let config = Cache.getConfig();
-            let savePath =path.join(process.cwd(), "resources/video",$siteName, $nickName, $date);// path.join(config.savePath, $siteName, $nickName, $date);
-            let fileName = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}_${date.getHours()}-${date.getMinutes()}-${date.getSeconds()}.mp4`;
+            let savePath = Util.getSavePath();
+            savePath = path.join(savePath, $siteName, $nickName, moment().format('YYYY-MM-DD'));
+            let dateText = moment().format('YYYYMMDD');
+            let timeText = moment().format('HHmmss');
+            let fileName = `${$siteName}~${$nickName}~${dateText}~${timeText}.mp4`;
             let res = Util.mkdirsSync(savePath);
             if (!res) {
                 this.logger.error("创建下载目录失败", savePath);
                 this.showError("创建下载目录失败");
+                this.cmdList[roomUrl]=null;
                 return;
             }
             this.liveInfoList[index]['recordStatus'] = Recorder.STATUS_RECORDING;
-            savePath = path.join(process.cwd(), "resources/video", $siteName, $nickName, $date, fileName);
+            savePath = path.join(savePath, fileName);
             this.showInfo(`${live.getNickName()} 开始录制。。。`);
             this.logger.info(`${live.getNickName()} ${roomUrl} 开始录制。。。`);
-            this.cmdList[roomUrl] = recorder.record(list[0]["liveUrl"], savePath); //以roomUrl为唯一索引cmd数组
+            this.cmdList[roomUrl] = recorder.record(list[0]["liveUrl"], savePath);
         },
         refreshRoomData() {
             if (this.interval) return;
@@ -210,10 +216,14 @@ export default Vue.extend({
 
         },
         remove(index: number) {
-            if (confirm("确定要删除该任务吗")) {
-                this.liveInfoList.splice(index, 1);
-                Cache.writeRoomList(this.liveInfoList);
-            }
+            this.$Modal.confirm({
+                title: '提示',
+                content: `确认要删除该任务吗`,
+                onOk: () => {
+                    this.liveInfoList.splice(index, 1);
+                    Cache.writeRoomList(this.liveInfoList);
+                }
+            });
         },
 
         async sureAddLive() {
@@ -444,8 +454,8 @@ export default Vue.extend({
                             if (recording) return;
                             // @ts-ignore
                             if (this.cmdList[params['row']['roomUrl']]) {
-                                this.showError(`${params['row']['nickName']} 重复录制了。。。`);
-                                this.logger.error(`重复录制了。。。`, params['row']);
+                                this.showError(`请不要重复点击,请耐心等待视频解析。。。`);
+                                this.logger.error(`${params['row']['nickName']}  重复录制了。。。`);
                             }
                             await this.recordRoomUrl(params.index, params['row']['roomUrl']);
                         }
@@ -510,7 +520,8 @@ export default Vue.extend({
                             const {shell} = require("electron").remote;
                             let $siteName = params.row.siteName;
                             let $nickName = Util.filterEmoji(params.row.nickName);
-                            let savePath = path.join(process.cwd(), "resources/video", $siteName, $nickName);
+                            let savePath = Util.getSavePath();
+                            savePath = path.join(savePath, $siteName, $nickName);
                             if (fs.existsSync(savePath)) {
                                 shell.showItemInFolder(savePath);
                             } else {

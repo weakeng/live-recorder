@@ -1,15 +1,13 @@
 import Vue from "Vue";
-import path from "path";
 import Util from "@/vendor/Util";
 import fs from "fs";
 import LiveFactory from "@/vendor/live/LiveFactory";
-import Cache from "@/vendor/Cache";
+
 
 export default Vue.extend({
     mounted() {
-        let setting = Cache.getConfig();
-        let savePath = path.join(process.cwd(), "resources/video");
-        Util.readFileList(savePath, this.fileList);
+        let savePath = Util.getSavePath();
+        fs.existsSync(savePath) && Util.readFileList(savePath, this.fileList);
         this.fileList.sort((file1: any, file2: any) => {
             return file2['time'] - file1['time'];
         });
@@ -56,7 +54,7 @@ export default Vue.extend({
                 },
                 {
                     title: '文件名称',
-                    align: 'center',
+                    align: 'left',
                     key: 'file',
                     render: (h: any, params: any) => {
                         return h('div', [
@@ -175,16 +173,20 @@ export default Vue.extend({
                     },
                     on: {
                         click: () => {
-                            if (confirm('确定要删除吗')) {
-                                fs.unlink(params.row.filePath, err => {
-                                    if (err) {
-                                        this.showError('删除失败');
-                                    } else {
-                                        this.fileList.splice(params.index, 1);
-                                        this.showInfo('删除成功');
-                                    }
-                                });
-                            }
+                            this.$Modal.confirm({
+                                title: '提示',
+                                content: `确认要删除该视频吗`,
+                                onOk: () => {
+                                    fs.unlink(params.row.filePath, err => {
+                                        if (err) {
+                                            this.showError('删除失败');
+                                        } else {
+                                            this.fileList.splice(params.index, 1);
+                                            this.showInfo('删除成功');
+                                        }
+                                    });
+                                }
+                            });
                         }
                     }
                 }),
