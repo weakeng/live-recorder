@@ -4,10 +4,11 @@ import router from './router'
 import store from './store'
 import 'iview/dist/styles/iview.css';
 import iview from 'iview';
-import Util from "@/vendor/Util";
-import path from "path";
+import Logger from "@/vendor/Logger";
+
 Vue.use(iview);
 Vue.prototype.cmdList = {};
+
 new Vue({
     router,
     store,

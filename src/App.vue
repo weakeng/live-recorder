@@ -17,9 +17,7 @@
     import Header from "@/components/Header.vue";
     import Footer from "@/components/Footer.vue";
     import Logger from "@/vendor/Logger";
-    import Recorder from "@/vendor/Recorder";
-    import Cache from "@/vendor/Cache";
-    // import HuaJiaoLive from "@/vendor/live/HuaJiaoLive";
+
     export default Vue.extend({
         data() {
             return {
@@ -27,11 +25,7 @@
             }
         },
         async mounted() {
-            // let cclive = new HuaJiaoLive('https://www.huajiao.com/l/290235086');
-            // await cclive.refreshRoomData();
-            // let list = await cclive.getLiveUrl();
-            // console.log(cclive);
-            
+
         },
         components: {
             Nav,
@@ -39,27 +33,7 @@
             Footer
         },
         beforeDestroy() {
-            const notification = {
-                title: `vue beforeDestroy`,
-                body: 'vue beforeDestroy',
-                icon: 'https://yy.com/favicon.ico',
-                silent: true,
-                requireInteraction: true,
-                sticky: true,
-            };
-            new Notification(notification.title, notification);
-            for (let roomUrl in this.cmdList) {
-                if (this.cmdList.roomUrl) {
-                    Logger.init().info(`销毁前 自动结束录制进程 ${roomUrl}`);
-                    Recorder.stop(this.cmdList.roomUrl);
-                }
-            }
-            Logger.init().info("VUE-APP beforeDestroy,把所有录制状态设为暂停录制");
-            let list = Cache.readRoomList();
-            list.forEach((item: any) => {
-                item['recordStatus'] = Recorder.STATUS_PAUSE;
-            });
-            Cache.writeRoomList(list);
+            Logger.init().info("VUE-APP beforeDestroy");
         },
         destroyed() {
             Logger.init().info("VUE-APP destroyed");

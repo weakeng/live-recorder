@@ -15,6 +15,7 @@ export default Vue.extend({
     mounted: function () {
         this.siteCode = this.siteNameList[0]["siteCode"];
         this.refreshRoomData();
+        this.initMainProcessEvent();
     },
     data() {
         return {
@@ -42,19 +43,22 @@ export default Vue.extend({
                 this.logger.error('重复录制了...', roomUrl);
                 return;
             }
-            this.cmdList[roomUrl]=true;
+            this.liveInfoList[index]['recordStatus'] = Recorder.STATUS_RECORDING;
+            this.cmdList[roomUrl] = true;
+
+            let nickName = this.liveInfoList[index]['nickName'];
 
             let cmdNum = 0;
             for (let index in this.cmdList) {
                 if (this.cmdList[index]) cmdNum++;
             }
-
             if (cmdNum > 10) {
                 this.liveInfoList[index].isAutoRecord = false;
-                this.liveInfoList[index].recordStatus = false;
                 this.showInfo('最多10个任务，达到录制上限自动暂停。。。');
                 this.logger.error('最多10个任务，达到录制上限自动暂停。。。...', roomUrl);
-                this.cmdList[roomUrl]=null;
+                this.cmdList[roomUrl] = null;
+                this.liveInfoList[index]['recordStatus'] = Recorder.STATUS_PAUSE;
+                this.liveInfoList[index]['isAutoRecord'] = false;
                 return;
             }
 
@@ -64,15 +68,17 @@ export default Vue.extend({
                 live = LiveFactory.getLive(roomUrl);
                 await live.refreshRoomData();
                 if (!live.getLiveStatus()) {
-                    this.showError('主播暂未开播!');
-                    this.cmdList[roomUrl]=null;
+                    this.showError(`${nickName} 暂未开播!`);
+                    this.cmdList[roomUrl] = null;
+                    this.liveInfoList[index]['recordStatus'] = Recorder.STATUS_PAUSE;
                     return;
                 }
                 list = await live.getLiveUrl();
             } catch (error) {
                 this.logger.error('获取直播源失败', error);
-                this.showError('获取直播源失败');
-                this.cmdList[roomUrl]=null;
+                this.showError(`获取直播源失败,${nickName}`);
+                this.cmdList[roomUrl] = null;
+                this.liveInfoList[index]['recordStatus'] = Recorder.STATUS_AWAIT_RECORD;
                 return;
             }
             let recorder = new Recorder(roomUrl);
@@ -81,7 +87,7 @@ export default Vue.extend({
                 let flag = false;
                 for (let i = 0; i < this.liveInfoList.length; i++) {
                     if (this.liveInfoList[i].roomUrl == recorder.id) {
-                        this.liveInfoList[i]['recordStatus'] = Recorder.STATUS_PAUSE;
+                        this.liveInfoList[i]['recordStatus'] = Recorder.STATUS_AWAIT_RECORD;
                         this.showError(`${live.getNickName()} 录制出错了。。。`);
                         this.logger.error(`${live.getNickName()} ${recorder.id} 录制出错了。。。`, err);
                         flag = true;
@@ -124,10 +130,11 @@ export default Vue.extend({
             if (!res) {
                 this.logger.error("创建下载目录失败", savePath);
                 this.showError("创建下载目录失败");
-                this.cmdList[roomUrl]=null;
+                this.cmdList[roomUrl] = null;
+                this.liveInfoList[index]['recordStatus'] = Recorder.STATUS_PAUSE;
+                this.liveInfoList[index]['isAutoRecord'] = false;
                 return;
             }
-            this.liveInfoList[index]['recordStatus'] = Recorder.STATUS_RECORDING;
             savePath = path.join(savePath, fileName);
             this.showInfo(`${live.getNickName()} 开始录制。。。`);
             this.logger.info(`${live.getNickName()} ${roomUrl} 开始录制。。。`);
@@ -137,9 +144,10 @@ export default Vue.extend({
             if (this.interval) return;
             let id = new Date().getSeconds();
             let setting = Cache.getConfig();
+            let time1 = new Date().getTime();
             //@ts-ignore
             this.interval = setInterval(async () => {
-                // this.showInfo(`执行定时器:${id}`);
+                let time2 = new Date().getTime();
                 this.logger.debug(`执行定时器:${id}`);
                 Cache.writeRoomList(this.liveInfoList);
                 Promise.all(this.liveInfoList.map(async (room: LiveInfoJson, index: number) => {
@@ -155,7 +163,7 @@ export default Vue.extend({
                     } catch (error) {
                         this.logger.error({msg: '刷新房间信息失败！', roomUrl: room.roomUrl, error: error});
                     }
-                    if (room['isAutoRecord'] && room['recordStatus'] == Recorder.STATUS_PAUSE) {
+                    if (room['liveStatus'] && room['isAutoRecord'] && room['recordStatus'] == Recorder.STATUS_PAUSE) {
                         room['recordStatus'] = Recorder.STATUS_AWAIT_RECORD;
                     }
                     if (!room['liveStatus'] && room['recordStatus'] == Recorder.STATUS_RECORDING) {
@@ -168,17 +176,9 @@ export default Vue.extend({
                         }
                     }
                     if (room['recordStatus'] == Recorder.STATUS_AWAIT_RECORD && room['liveStatus']) {
-                        if (this.cmdList[room['roomUrl']]) {
-                            this.showError(`${room.nickName} 重复录制了。。。`);
-                            this.logger.error(`${room.nickName} 重复录制了。。。`);
-                        } else {
-                            this.recordRoomUrl(index, room['roomUrl']).then().catch((err) => {
-                                this.showError(`${room.nickName} 录制失败。。。`);
-                                this.logger.error(room.nickName + ' 录制失败', err);
-                            });
-                        }
+                        await this.recordRoomUrl(index, room['roomUrl']);
                     }
-                    if (!room.oldStatus && room.liveStatus) {
+                    if (!room.oldStatus && room.liveStatus && (time2 - time1) > 60000) {
                         const notification = {
                             title: `${room.siteName}(${room.nickName})开播了`,
                             body: '主播开播了，快去给心仪的主播录制吧！',
@@ -187,10 +187,9 @@ export default Vue.extend({
                             requireInteraction: true,
                             sticky: true,
                         };
-                        let setting = Cache.getConfig();
                         setting.notice && new Notification(notification.title, notification);
-                        this.logger.debug(`${room.siteName}(${room.nickName})开播了`);
-                    } else if (room.oldStatus && !room.liveStatus) {
+                        this.logger.info(`${room.siteName}(${room.nickName})开播了`);
+                    } else if (room.oldStatus && !room.liveStatus && (time2 - time1) > 60000) {
                         const notification = {
                             title: `${room.siteName}(${room.nickName})下播了`,
                             body: '主播下播了，快去看看自己录制的视频吧！',
@@ -199,9 +198,8 @@ export default Vue.extend({
                             requireInteraction: true,
                             sticky: true,
                         };
-                        let setting = Cache.getConfig();
                         setting.notice && new Notification(notification.title, notification);
-                        this.logger.debug(`${room.siteName}(${room.nickName})下播了`);
+                        this.logger.info(`${room.siteName}(${room.nickName})下播了`);
                     }
                 })).then(() => {
                     this.liveInfoList = this.liveInfoList.sort(function (a: LiveInfoJson, b: LiveInfoJson) {
@@ -210,7 +208,7 @@ export default Vue.extend({
                         return bb - aa;
                     });
                 }).catch((err) => {
-                    this.logger.info(`Promise.all : error `, err);
+                    this.logger.error(`Promise.all : error `, err);
                 });
             }, setting.refreshTime * 1000);
 
@@ -532,6 +530,24 @@ export default Vue.extend({
                     }
                 })
             ]);
+        },
+        initMainProcessEvent() {
+            require('electron').ipcRenderer.on('ping', (event, message) => {
+                if (message == 'BrowserWindowClosed') {
+                    this.logger.info('BrowserWindowClosed 主动暂停录制进程!');
+                    for (let roomUrl in this.cmdList) {
+                         this.logger.info('暂停录制进程', roomUrl);
+                        if (this.cmdList[roomUrl]) {
+                            try {
+                                Recorder.stop(this.cmdList[roomUrl]);
+                            } catch (e) {
+                                this.logger.error("退出前暂停录制失败", roomUrl, e);
+                            }
+                        }
+
+                    }
+                }
+            });
         },
         showInfo(msg: any) {
             msg = typeof msg == "string" ? msg : JSON.stringify(msg);
