@@ -29,7 +29,7 @@ class EgameLive extends Live {
                     lineIndex: '主线路',
                     liveUrl: vo['playUrl'],
                 };
-                liveList.unshift(item);
+                liveList.push(item);
             });
             return liveList;
         } else {

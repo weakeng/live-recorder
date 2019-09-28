@@ -70,7 +70,7 @@ class HuYaLive extends Live {
                         lineIndex: `${urlList[i].iLineIndex}`,
                         liveUrl: url
                     };
-                    liveList.unshift(item);
+                    liveList.push(item);
                 }
             }
             return liveList;

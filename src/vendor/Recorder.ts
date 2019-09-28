@@ -2,6 +2,7 @@ import ffmpeg from 'fluent-ffmpeg';
 import path from "path";
 import Cache from './Cache';
 
+// import process from "electron";
 class Recorder {
     public static readonly STATUS_PAUSE = 1;//暂停中
     public static readonly STATUS_RECORDING = 2;//正在录制
@@ -19,7 +20,19 @@ class Recorder {
     }
 
     public static init() {
-        const ffmpegPath = path.join(process.cwd(), "resources/bin/", "ffmpeg.exe");
+        let ffmpegPath = path.join(process.cwd(), "resources/bin/", "ffmpeg.exe");
+        switch (process.platform) {
+            case 'win32':
+                ffmpegPath = path.join(process.cwd(), "resources/win32/", "ffmpeg.exe");
+                break;
+            case 'linux':
+                ffmpegPath = path.join(process.cwd(), "resources/linux/", "ffmpeg");
+                break;
+            case 'darwin':
+                ffmpegPath = path.join(process.cwd(), "resources/darwin/", "ffmpeg");
+                break;
+            default:
+        }
         ffmpeg.setFfmpegPath(ffmpegPath);
     }
 
