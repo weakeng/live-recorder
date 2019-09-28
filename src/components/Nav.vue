@@ -15,15 +15,15 @@
 
 <script lang="ts">
     import Vue from "vue";
-    import {ipcRenderer, remote} from "electron"
+    import {remote} from "electron"
 
     export default Vue.extend({
         methods: {
             minFrame() {
-                ipcRenderer.send('min');
+                remote.getCurrentWindow().minimize();
             },
             closeFrame() {
-                remote.app.quit();
+                remote.getCurrentWindow().close();
             }
         }
     });

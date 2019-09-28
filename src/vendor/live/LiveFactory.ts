@@ -5,9 +5,6 @@ import DouYuLive from "./DouYuLive";
 import EgameLive from "./EgameLive";
 import HuaJiaoLive from "./HuaJiaoLive";
 import YYLive from "./YYLive";
-import Logger from '../Logger';
-import Cache from '../Cache';
-import {LiveInfoJson} from "@/vendor/live/Json";
 
 class LiveFactory {
     public static getLive(roomUrl: string) {
@@ -69,40 +66,6 @@ class LiveFactory {
             {siteCode: YYLive.SITE.SITE_CODE, siteName: YYLive.SITE.SITE_NAME},
             {siteCode: HuaJiaoLive.SITE.SITE_CODE, siteName: HuaJiaoLive.SITE.SITE_NAME},
         ]
-    }
-
-    public static refreshRoomData() {
-        let list: Array<LiveInfoJson> = Cache.readRoomList();
-        let resList: Array<LiveInfoJson> = [];
-        let newItem: LiveInfoJson;
-        Promise.all(list.map(async (item: LiveInfoJson) => {
-            let live = LiveFactory.getLive(item.roomUrl);
-            try {
-                await live.refreshRoomData();
-                newItem = {
-                    siteName: live.getBaseSite().SITE_NAME,
-                    siteIcon: live.getBaseSite().SITE_ICON,
-                    nickName: live.getNickName() || item['nickName'],
-                    headIcon: live.getHeadIcon() || item['headIcon'],
-                    title: live.getTitle() || item['title'],
-                    roomUrl: live.roomUrl,
-                    oldStatus:item['liveStatus'],
-                    liveStatus: live.getLiveStatus(),
-                    isAutoRecord: item['isAutoRecord'] || false,
-                    recordStatus: item['recordStatus'] || 1,
-                    addTime: item['addTime'] || new Date().getTime(),
-                };
-            } catch (error) {
-                newItem = item;
-                Logger.init().error({msg: '刷新房间信息失败！', roomUrl: item.roomUrl, error: error});
-            }
-            resList.push(newItem);
-        })).then(() => {
-            let res = resList.sort(function (a: LiveInfoJson, b: LiveInfoJson) {
-                return b['addTime'] - a['addTime'];
-            });
-            Cache.writeRoomList(res);
-        });
     }
 }
 

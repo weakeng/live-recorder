@@ -1,7 +1,8 @@
 import fs from 'fs';
 import path from 'path';
-import {settingJson} from "@/vendor/live/Json";
+import {settingJson,LiveInfoJson} from "@/vendor/live/Json";
 import Util from './Util';
+import Recorder from "@/vendor/Recorder";
 
 class Cache {
     static readonly ROOM_LIST_FILE = path.join(process.cwd(), "resources/cache/", "room_list.json");
@@ -52,7 +53,13 @@ class Cache {
     }
 
     public static readRoomList() {
-        return this.get(Cache.ROOM_LIST_FILE);
+        let list= this.get(Cache.ROOM_LIST_FILE);
+        list.forEach((item:LiveInfoJson)=>{
+            item.liveStatus=false;
+            item.oldStatus=false;
+            item.recordStatus=Recorder.STATUS_PAUSE;
+        });
+        return list;
     }
 
     public static saveRoom(roomUrl: string, _roomOption: {}) {

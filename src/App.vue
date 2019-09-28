@@ -31,12 +31,6 @@
             Nav,
             Header,
             Footer
-        },
-        beforeDestroy() {
-            Logger.init().info("VUE-APP beforeDestroy");
-        },
-        destroyed() {
-            Logger.init().info("VUE-APP destroyed");
         }
 
     });

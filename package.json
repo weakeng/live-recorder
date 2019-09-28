@@ -15,6 +15,7 @@
   "dependencies": {
     "@types/fluent-ffmpeg": "^2.1.10",
     "@types/request-promise": "^4.1.44",
+    "electron-better-ipc": "^0.5.0",
     "fluent-ffmpeg": "^2.1.2",
     "iview": "^3.5.1",
     "log4js": "^5.1.0",

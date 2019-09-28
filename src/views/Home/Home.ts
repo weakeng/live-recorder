@@ -9,33 +9,34 @@ import Live from "../../vendor/live/Live";
 import {LiveInfoJson, StreamJson} from "@/vendor/live/Json";
 import fs from "fs";
 import moment from "moment";
+import ipc from "electron-better-ipc";
+import {remote} from "electron";
 
 export default Vue.extend({
     name: "home",
     mounted: function () {
         this.siteCode = this.siteNameList[0]["siteCode"];
-        this.refreshRoomData();
-        this.initMainProcessEvent();
+        this.initEvent();
+    },
+
+    created() {
+        // @ts-ignore
+        this.interval = this.refreshRoomData();
     },
     data() {
         return {
             siteNameList: LiveFactory.getAllSiteName(),
             siteAddress: '',
             roomNumber: '',
+            logger: Logger.init(),
+            interval: null,
             liveInfoList: Cache.readRoomList(),
             addLive_method: "输入网址",
             siteCode: '',
             modal_add_live: false,
-            interval: null,
-            logger: Logger.init(),
             // @ts-ignore
             liveInfoHeader: this.tableHeadInit(),
         };
-    },
-    beforeDestroy() {
-        //@ts-ignore
-        if (this.interval) clearInterval(this.interval);
-        Cache.writeRoomList(this.liveInfoList);
     },
     methods: {
         async recordRoomUrl(index: number, roomUrl: string) {
@@ -49,8 +50,8 @@ export default Vue.extend({
             let nickName = this.liveInfoList[index]['nickName'];
 
             let cmdNum = 0;
-            for (let index in this.cmdList) {
-                if (this.cmdList[index]) cmdNum++;
+            for (let roomUrl in this.cmdList) {
+                if (this.cmdList.hasOwnProperty(roomUrl)) cmdNum++;
             }
             if (cmdNum > 10) {
                 this.liveInfoList[index].isAutoRecord = false;
@@ -141,12 +142,10 @@ export default Vue.extend({
             this.cmdList[roomUrl] = recorder.record(list[0]["liveUrl"], savePath);
         },
         refreshRoomData() {
-            if (this.interval) return;
             let id = new Date().getSeconds();
             let setting = Cache.getConfig();
             let time1 = new Date().getTime();
-            //@ts-ignore
-            this.interval = setInterval(async () => {
+            let func = () => {
                 let time2 = new Date().getTime();
                 this.logger.debug(`执行定时器:${id}`);
                 Cache.writeRoomList(this.liveInfoList);
@@ -210,8 +209,11 @@ export default Vue.extend({
                 }).catch((err) => {
                     this.logger.error(`Promise.all : error `, err);
                 });
+            };
+            func();
+            return setInterval(() => {
+                func();
             }, setting.refreshTime * 1000);
-
         },
         remove(index: number) {
             this.$Modal.confirm({
@@ -531,22 +533,49 @@ export default Vue.extend({
                 })
             ]);
         },
-        initMainProcessEvent() {
-            require('electron').ipcRenderer.on('ping', (event, message) => {
-                if (message == 'BrowserWindowClosed') {
-                    this.logger.info('BrowserWindowClosed 主动暂停录制进程!');
-                    for (let roomUrl in this.cmdList) {
-                         this.logger.info('暂停录制进程', roomUrl);
-                        if (this.cmdList[roomUrl]) {
-                            try {
-                                Recorder.stop(this.cmdList[roomUrl]);
-                            } catch (e) {
-                                this.logger.error("退出前暂停录制失败", roomUrl, e);
+        initEvent() {
+            ipc.ipcRenderer.answerMain('BrowserWindowClose', () => {
+                this.$Modal.confirm({
+                    title: '信息',
+                    content: `是否确认退出`,
+                    loading: true,
+                    onOk: () => {
+                        this.logger.info("BrowserWindow 退出,把所有录制状态设为暂停录制");
+                        this.liveInfoList.forEach((item: any) => {
+                            item['recordStatus'] = Recorder.STATUS_PAUSE;
+                            item['liveStatus'] = false;
+                            item['oldStatus'] = false;
+                        });
+                        for (let roomUrl in this.cmdList) {
+                            if (this.cmdList.hasOwnProperty(roomUrl)) {
+                                let cmd = this.cmdList[roomUrl];
+                                try {
+                                    this.logger.debug("自动停止录播", roomUrl);
+                                    cmd && Recorder.stop(cmd);
+                                } catch (e) {
+                                    this.logger.error(`暂停录制失败`, roomUrl, e);
+                                }
                             }
                         }
-
+                        Cache.writeRoomList(this.liveInfoList);
+                        let time1 = new Date().getTime();
+                        setInterval(() => {
+                            let flag = true;
+                            for (let roomUrl in this.cmdList) {
+                                if (this.cmdList.hasOwnProperty(roomUrl)) {
+                                    let cmd = this.cmdList[roomUrl];
+                                    if (cmd) {
+                                        flag = false;
+                                        break;
+                                    }
+                                }
+                            }
+                            let time2 = new Date().getTime();
+                            //为了避免等待时间过长
+                            if (flag || (time2 - time1) > 10000) remote.app.exit();
+                        }, 100);
                     }
-                }
+                })
             });
         },
         showInfo(msg: any) {

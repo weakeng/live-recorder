@@ -6,25 +6,7 @@ import LiveFactory from "@/vendor/live/LiveFactory";
 
 export default Vue.extend({
     mounted() {
-        let savePath = Util.getSavePath();
-        fs.existsSync(savePath) && Util.readFileList(savePath, this.fileList);
-        this.fileList.sort((file1: any, file2: any) => {
-            return file2['time'] - file1['time'];
-        });
-        this.fileList.forEach((item) => {
-            let vo = `${item['siteName']}-${item['nickName']}`;
-            //@ts-ignore
-            if (this.nickNameList.indexOf(vo) < 0) {
-                //@ts-ignore
-                this.nickNameList.push(vo);
-            }
-            //@ts-ignore
-            this.fileListArr[vo] = this.fileListArr[vo] ? this.fileListArr[vo] : [];
-            //@ts-ignore
-            this.fileListArr[vo].push(item);
-        });
-        this.fileListTemp = this.fileList;
-        // console.log(this.fileListArr);
+        this.init();
     },
     data() {
         return {
@@ -32,9 +14,15 @@ export default Vue.extend({
             fileListTemp: [],
             fileListArr: [],
             nickNameList: [],
+            selectList: [],
             dateText: '',
             nickName: '',
             headTable: [
+                {
+                    type: 'selection',
+                    width: 60,
+                    align: 'center'
+                },
                 {
                     width: 100,
                     title: '直播平台',
@@ -94,6 +82,52 @@ export default Vue.extend({
         }
     },
     methods: {
+        init() {
+            let savePath = Util.getSavePath();
+            fs.existsSync(savePath) && Util.readFileList(savePath, this.fileList);
+            this.fileList.sort((file1: any, file2: any) => {
+                return file2['time'] - file1['time'];
+            });
+            this.fileList.forEach((item) => {
+                let vo = `${item['siteName']}-${item['nickName']}`;
+                //@ts-ignore
+                if (this.nickNameList.indexOf(vo) < 0) {
+                    //@ts-ignore
+                    this.nickNameList.push(vo);
+                }
+                //@ts-ignore
+                this.fileListArr[vo] = this.fileListArr[vo] ? this.fileListArr[vo] : [];
+                //@ts-ignore
+                this.fileListArr[vo].push(item);
+            });
+            this.fileListTemp = this.fileList;
+        },
+        doSelectList(selectList: any) {
+            this.selectList = selectList;
+        },
+        deleteAll() {
+            let len = this.selectList.length;
+            if (len <= 0) {
+                this.showInfo(`至少选中一项删除！`);
+                return;
+            }
+            this.$Modal.confirm({
+                title: '提示',
+                content: `确认要删除这${len}个视频吗`,
+                onOk: () => {
+                    let success = 0, error = 0;
+                    for (let i = 0; i < len; i++) {
+                        this.fileList.forEach((item, index) => {
+                            if (item['filePath'] === this.selectList[i]['filePath']) {
+                                this.fileList.splice(index, 1);
+                                fs.unlinkSync(this.selectList[i]['filePath']);
+                            }
+                        });
+                    }
+                    this.showInfo(`删除成功！`);
+                }
+            });
+        },
         nickChange() {
             if (this.nickName) {
                 //@ts-ignore

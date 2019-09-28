@@ -1,12 +1,8 @@
 'use strict';
 
-import {app, protocol, BrowserWindow, ipcMain, dialog} from 'electron'
-import Cache from "./vendor/Cache";
-import Logger from "./vendor/Logger";
-import {
-    createProtocol,
-    // installVueDevtools
-} from 'vue-cli-plugin-electron-builder/lib'
+import {app, protocol, BrowserWindow, ipcMain} from 'electron';
+import ipc from 'electron-better-ipc';
+import {createProtocol} from 'vue-cli-plugin-electron-builder/lib'
 
 const isDevelopment = process.env.NODE_ENV !== 'production';
 
@@ -40,40 +36,14 @@ function createWindow() {
         win.loadURL('app://./index.html')
     }
 
-    ipcMain.on('min', () => {
-        if (win) {
-            win.minimize()
-        }
+    win.on('close', (event: Event) => {
+        event.preventDefault();
+        win && ipc.ipcMain.callRenderer(win, 'BrowserWindowClose');
     });
-    win.on('closed', (e: Event) => {
-        dialog.showMessageBox({
-            type: "info",//图标类型
-            title: "信息",//信息提示框标题
-            message: "确认要退出吗",//信息提示框内容
-            buttons: ["确定", "取消"],//下方显示的按钮
-            cancelId: 2//点击x号关闭返回值
-        }).then((index) => {
-            if (index) {
-                Logger.init().debug('showMessageBox');
-                Logger.init().info("window退出,把所有录制状态设为暂停录制,清除定时器");
-                let list = Cache.readRoomList();
-                list.forEach((item: any) => {
-                    item['recordStatus'] = 1;
-                    item['liveStatus'] = false;
-                    item['oldStatus'] = false;
-                });
-                Cache.writeRoomList(list);
-                //todo 发送错误日志到邮箱
-                win = null;
-                app.exit();
-            } else {
-                e.preventDefault();
-            }
-        });
-
+    win.on('closed', () => {
+        win = null;
     })
 }
-
 // Quit when all windows are closed.
 app.on('window-all-closed', () => {
     // On macOS it is common for applications and their menu bar
@@ -103,9 +73,9 @@ app.on('ready', async () => {
         // If you are not using Windows 10 dark mode, you may uncomment these lines
         // In addition, if the linked issue is closed, you can upgrade electron and uncomment these lines
         // try {
-        //   await installVueDevtools()
+        //     await installVueDevtools()
         // } catch (e) {
-        //   console.error('Vue Devtools failed to install:', e.toString())
+        //     console.error('Vue Devtools failed to install:', e.toString())
         // }
 
     }

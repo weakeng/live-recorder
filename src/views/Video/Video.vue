@@ -10,16 +10,20 @@
                     </label>
                 </Col>
                 <Col span="6" style="padding-right:10px">
-                    <DatePicker  v-model="dateText" @on-clear="clearDate()" @on-change="dateChange()" type="date" placeholder="选择日期"></DatePicker>
+                    <DatePicker v-model="dateText" @on-clear="clearDate()" @on-change="dateChange()" type="date"
+                                placeholder="选择日期"></DatePicker>
                 </Col>
-
                 <Col span="6">
                     <Button @click="resetData()">清空搜索</Button>
+
+                </Col>
+                <Col span="4">
+                    <Button @click="deleteAll()">删 除</Button>
                 </Col>
             </Row>
         </div>
         <div class="content">
-            <Table border :columns="headTable" :data="fileList" size="small"></Table>
+            <Table border :columns="headTable" :data="fileList" size="small" @on-selection-change="doSelectList"></Table>
         </div>
     </div>
 </template>
