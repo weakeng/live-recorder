@@ -26,7 +26,7 @@ module.exports = {
                     "shortcutName": "直播录制小助手", // 图标名称
                 },
                 appId: "com.gsonhub.recorder",
-                extraFiles: ['./resources/bin/', './resources/cache/']
+                extraFiles: ['./resources/bin/']
             },
             chainWebpackRendererProcess: config => {
                 config.plugin('define').tap(args => {

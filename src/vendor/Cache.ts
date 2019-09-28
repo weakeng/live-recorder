@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import {settingJson,LiveInfoJson} from "@/vendor/live/Json";
+import {settingJson, LiveInfoJson} from "@/vendor/live/Json";
 import Util from './Util';
 import Recorder from "@/vendor/Recorder";
 
@@ -18,6 +18,7 @@ class Cache {
             data = fs.readFileSync(fileName, 'utf-8');
             data = JSON.parse(String(data)) || []
         } else {
+            Util.mkdirsSync(path.join(process.cwd(), "resources/cache"));
             data = [];
         }
         return data;
@@ -40,6 +41,7 @@ class Cache {
                 "notice": true
             };
             Util.mkdirsSync(data.savePath);
+            Util.mkdirsSync(path.join(process.cwd(), "resources/cache"));
             this.set(Cache.CONFIG_FILE, data);
         }
         return data;
@@ -53,11 +55,11 @@ class Cache {
     }
 
     public static readRoomList() {
-        let list= this.get(Cache.ROOM_LIST_FILE);
-        list.forEach((item:LiveInfoJson)=>{
-            item.liveStatus=false;
-            item.oldStatus=false;
-            item.recordStatus=Recorder.STATUS_PAUSE;
+        let list = this.get(Cache.ROOM_LIST_FILE);
+        list.forEach((item: LiveInfoJson) => {
+            item.liveStatus = false;
+            item.oldStatus = false;
+            item.recordStatus = Recorder.STATUS_PAUSE;
         });
         return list;
     }

@@ -6,7 +6,7 @@ class HuYaLive extends Live {
     public static readonly SITE: SiteJson = {
         SITE_NAME: '虎牙直播',
         SITE_CODE: 'HuYaLive',
-        SITE_ICON: 'https://huya.com/favicon.ico',
+        SITE_ICON: 'https://www.huya.com/favicon.ico',
         MATCH_ROOM_URL: /^https:\/\/(www\.)?huya\.com\/(\w+)/,
         BASE_ROOM_URL: 'https://www.huya.com/%s',
     };

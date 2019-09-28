@@ -18,7 +18,6 @@ export default Vue.extend({
         this.siteCode = this.siteNameList[0]["siteCode"];
         this.initEvent();
     },
-
     created() {
         // @ts-ignore
         this.interval = this.refreshRoomData();
