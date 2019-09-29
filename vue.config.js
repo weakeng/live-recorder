@@ -4,7 +4,7 @@ module.exports = {
             builderOptions: {
                 productName: "直播录制小助手",
                 win: {//win相关配置
-                   "icon": "./public/app.ico",//图标，当前图标在根目录下，注意这里有两个坑
+                    "icon": "./public/app.ico",//图标，当前图标在根目录下，注意这里有两个坑
                     "target": [
                         {
                             "target": "nsis",//利用nsis制作安装程序
@@ -13,7 +13,11 @@ module.exports = {
                             ]
                         }
                     ],
-                     extraFiles: ['./resources/bin/win32']
+                    extraFiles: ['./resources/bin/win32']
+                },
+                linux: {
+                    "icon": "./public/app.ico",
+                    extraFiles: ['./resources/bin/linux']
                 },
                 nsis: {
                     "oneClick": false, // 是否一键安装

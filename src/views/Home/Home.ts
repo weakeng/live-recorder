@@ -82,10 +82,10 @@ export default Vue.extend({
             }
             let recorder = new Recorder(roomUrl);
             recorder.onErr = err => {
-                this.cmdList[recorder.id] = null;
                 let flag = false;
                 for (let i = 0; i < this.liveInfoList.length; i++) {
                     if (this.liveInfoList[i].roomUrl == recorder.id) {
+                        this.cmdList[recorder.id] = null;
                         this.liveInfoList[i]['recordStatus'] = Recorder.STATUS_AWAIT_RECORD;
                         this.showError(`${live.getNickName()} 录制出错了。。。`);
                         this.logger.error(`${live.getNickName()} ${recorder.id} 录制出错了。。。`, err);
@@ -98,11 +98,11 @@ export default Vue.extend({
                 }
             };
             recorder.onEnd = () => {
-                this.cmdList[recorder.id] = null;
                 let flag = false;
                 for (let i = 0; i < this.liveInfoList.length; i++) {
                     if (this.liveInfoList[i].roomUrl == recorder.id) {
                         if (this.liveInfoList[i]['recordStatus'] == Recorder.STATUS_RECORDING) {
+                            this.cmdList[recorder.id] = null;
                             this.liveInfoList[i]['recordStatus'] = Recorder.STATUS_AWAIT_RECORD;
                             this.logger.info(`${live.getNickName()} ${recorder.id} 录制完成。。。切换为待录制状态`);
                             this.showInfo(`${live.getNickName()} 录制完成,等待自动录制中。。。`);
@@ -180,7 +180,6 @@ export default Vue.extend({
                             title: `${room.siteName}(${room.nickName})开播了`,
                             body: '主播开播了，快去给心仪的主播录制吧！',
                             icon: room.headIcon,
-                            silent: true,
                             requireInteraction: true,
                             sticky: true,
                         };
@@ -191,7 +190,6 @@ export default Vue.extend({
                             title: `${room.siteName}(${room.nickName})下播了`,
                             body: '主播下播了，快去看看自己录制的视频吧！',
                             icon: room.headIcon,
-                            silent: true,
                             requireInteraction: true,
                             sticky: true,
                         };
@@ -467,7 +465,7 @@ export default Vue.extend({
                         size: "small",
                         icon: "ios-pause",
                         shape: "circle",
-                        disabled: !pause
+                        disabled: pause
                     },
                     style: {
                         marginRight: "5px",
@@ -478,11 +476,12 @@ export default Vue.extend({
                             this.logger.info(`${params.row.nickName} 暂停中。。。`);
                             if (recording) {
                                 try {
-                                    Recorder.stop(this.cmdList[params.row.roomUrl]);
                                     this.liveInfoList[params.index]['recordStatus'] = Recorder.STATUS_PAUSE;
                                     this.liveInfoList[params.index]['isAutoRecord'] = false;
+                                    Recorder.stop(this.cmdList[params.row.roomUrl]);
+                                    this.cmdList[params.row.roomUrl] = null;
                                 } catch (error) {
-                                    this.showError("无法暂停");
+                                    this.showError("暂停出错了");
                                     this.logger.error(`${params.row.nickName} 暂停出错了。。。`, error);
                                 }
                             } else {
@@ -498,11 +497,11 @@ export default Vue.extend({
                         size: "small",
                         shape: "circle",
                         icon: "ios-trash",
-                        disabled: pause
+                        disabled: !pause
                     },
                     style: {
                         marginRight: "5px",
-                        display: pause ? 'none' : 'inline-block'
+                        display: !pause ? 'none' : 'inline-block'
                     },
                     on: {
                         click: () => {

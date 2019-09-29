@@ -18,6 +18,7 @@
     import Header from "@/components/Header.vue";
     import Footer from "@/components/Footer.vue";
     import LiveFactory from "@/vendor/live/LiveFactory";
+
     export default Vue.extend({
         data() {
             return {
@@ -25,10 +26,10 @@
             }
         },
         async mounted() {
-           // let live= LiveFactory.getLive("https://www.huajiao.com/l/290558291?hd=1");
-           // await live.refreshRoomData();
-           // let l=await live.getLiveUrl();
-           // console.log(live,l);
+            // let live= LiveFactory.getLive("https://www.huajiao.com/l/290558291?hd=1");
+            // await live.refreshRoomData();
+            // let l=await live.getLiveUrl();
+            // console.log(live,l);
         },
         components: {
             Nav,
