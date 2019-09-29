@@ -47,7 +47,6 @@ export default Vue.extend({
             this.cmdList[roomUrl] = true;
 
             let nickName = this.liveInfoList[index]['nickName'];
-
             let cmdNum = 0;
             for (let roomUrl in this.cmdList) {
                 if (this.cmdList.hasOwnProperty(roomUrl)) cmdNum++;
@@ -435,6 +434,8 @@ export default Vue.extend({
         renderAction(h: any, params: any) {
             //@ts-ignore
             let recording = this.liveInfoList[params.index]['recordStatus'] == Recorder.STATUS_RECORDING;
+            let pause = this.liveInfoList[params.index]['recordStatus'] == Recorder.STATUS_PAUSE;
+            // let await = this.liveInfoList[params.index]['recordStatus'] == Recorder.STATUS_AWAIT_RECORD;
             return h("div", [
                 h("Button", {
                     props: {
@@ -466,22 +467,27 @@ export default Vue.extend({
                         size: "small",
                         icon: "ios-pause",
                         shape: "circle",
-                        disabled: !recording
+                        disabled: !pause
                     },
                     style: {
                         marginRight: "5px",
-                        display: recording ? 'inline-block' : 'none'
+                        display: !pause ? 'inline-block' : 'none'
                     },
                     on: {
                         click: () => {
                             this.logger.info(`${params.row.nickName} 暂停中。。。`);
-                            try {
-                                Recorder.stop(this.cmdList[params.row.roomUrl]);
+                            if (recording) {
+                                try {
+                                    Recorder.stop(this.cmdList[params.row.roomUrl]);
+                                    this.liveInfoList[params.index]['recordStatus'] = Recorder.STATUS_PAUSE;
+                                    this.liveInfoList[params.index]['isAutoRecord'] = false;
+                                } catch (error) {
+                                    this.showError("无法暂停");
+                                    this.logger.error(`${params.row.nickName} 暂停出错了。。。`, error);
+                                }
+                            } else {
                                 this.liveInfoList[params.index]['recordStatus'] = Recorder.STATUS_PAUSE;
-                                this.liveInfoList[params.index]['isAutoRecord'] = false;
-                            } catch (error) {
-                                this.showError("无法暂停");
-                                this.logger.error(`${params.row.nickName} 暂停出错了。。。`, error);
+                                this.cmdList[params.row.roomUrl] = null;
                             }
                         }
                     }
@@ -492,11 +498,11 @@ export default Vue.extend({
                         size: "small",
                         shape: "circle",
                         icon: "ios-trash",
-                        disabled: recording
+                        disabled: pause
                     },
                     style: {
                         marginRight: "5px",
-                        display: recording ? 'none' : 'inline-block'
+                        display: pause ? 'none' : 'inline-block'
                     },
                     on: {
                         click: () => {
@@ -549,7 +555,7 @@ export default Vue.extend({
                             if (this.cmdList.hasOwnProperty(roomUrl)) {
                                 let cmd = this.cmdList[roomUrl];
                                 try {
-                                    this.logger.debug("自动停止录播", roomUrl);
+                                    cmd && this.logger.debug("自动停止录播", roomUrl);
                                     cmd && Recorder.stop(cmd);
                                 } catch (e) {
                                     this.logger.error(`暂停录制失败`, roomUrl, e);

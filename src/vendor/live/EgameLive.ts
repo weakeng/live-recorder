@@ -55,6 +55,7 @@ class EgameLive extends Live {
             this.setRoomId(match_roomId[1]);
             this.setLiveStatus(match_isLive);
             this.roomUrl = EgameLive.SITE.BASE_ROOM_URL.replace(/%s/, match_roomId[1]);
+            return this;
         } else {
             throw `获取房间信息失败！主播未开播或房间号有误,${EgameLive.SITE.SITE_NAME}(${this.roomUrl})`;
         }

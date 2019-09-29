@@ -12,6 +12,8 @@ class Recorder {
     };
     public onEnd: () => void = function () {
     };
+    public onLog: (err: any) => void = function () {
+    };
     public id: any;
 
     public constructor(id: any) {
@@ -20,18 +22,17 @@ class Recorder {
     }
 
     public static init() {
-        let ffmpegPath = path.join(process.cwd(), "resources/bin/", "ffmpeg.exe");
+        let ffmpegPath = '';
         switch (process.platform) {
             case 'win32':
-                ffmpegPath = path.join(process.cwd(), "resources/win32/", "ffmpeg.exe");
+                ffmpegPath = path.join(process.cwd(), "resources/bin/win32/", "ffmpeg.exe");
                 break;
             case 'linux':
-                ffmpegPath = path.join(process.cwd(), "resources/linux/", "ffmpeg");
+                ffmpegPath = path.join(process.cwd(), "resources/bin/linux/", "ffmpeg");
                 break;
             case 'darwin':
-                ffmpegPath = path.join(process.cwd(), "resources/darwin/", "ffmpeg");
+                ffmpegPath = path.join(process.cwd(), "resources/bin/darwin/", "ffmpeg");
                 break;
-            default:
         }
         ffmpeg.setFfmpegPath(ffmpegPath);
     }
@@ -55,8 +56,7 @@ class Recorder {
                 this.onEnd();
             })
             .on('stderr', (stderrLine) => {
-                // console.log(stderrLine);
-                //todo 写入ffmpeg运行日志
+                this.onLog(stderrLine);
             });
         command.run();
         return command;

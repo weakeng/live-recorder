@@ -24,7 +24,7 @@
             </FormItem>
             <FormItem label="视频保存路径" prop="saveFolder" style="width: 400px">
                 <input ref="saveFolder" type="file" webkitdirectory @change="onSaveFolderSelect"/>
-                <i-input v-model="setting.savePath" readonly>
+                <i-input v-model="setting.savePath" readonly :title="setting.savePath">
                     <Icon type="md-folder" slot="suffix" @click="$refs.saveFolder.click()"/>
                 </i-input>
             </FormItem>

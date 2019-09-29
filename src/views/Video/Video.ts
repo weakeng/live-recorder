@@ -24,8 +24,9 @@ export default Vue.extend({
                     align: 'center'
                 },
                 {
-                    width: 100,
+                    width: 105,
                     title: '直播平台',
+                    align: 'center',
                     key: 'siteName',
                     //@ts-ignore
                     filters: this.getSiteNameFilters(),
