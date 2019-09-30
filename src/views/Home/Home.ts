@@ -18,6 +18,10 @@ export default Vue.extend({
         this.siteCode = this.siteNameList[0]["siteCode"];
         this.initEvent();
     },
+    beforeDestroy() {
+        // @ts-ignore
+        this.interval && clearInterval(this.interval);
+    },
     created() {
         // @ts-ignore
         this.interval = this.refreshRoomData();

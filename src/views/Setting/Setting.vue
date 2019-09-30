@@ -33,8 +33,12 @@
                 <Button @click="reset()">恢复默认设置</Button>
             </FormItem>
         </Form>
+
+        <webview id="webview" src="http://inke.cn/live.html?uid=730199258&id=1569823360634861" style="display:inline-flex; width:100%; height:300px"
+                 :preload="preload"></webview>
     </div>
 </template>
+
 
 <script>
     import Vue from "Vue";
@@ -43,6 +47,7 @@
     import fs from "fs";
     import {settingJson} from "../../vendor/live/Json";
     import Util from "@/vendor/Util";
+
 
     export default Vue.extend({
         mounted() {
@@ -57,10 +62,26 @@
                 setting
             );
 
+            const webview = document.querySelector('webview');
+            let webRequest = webview.getWebContents().session.webRequest;
+            webRequest.onCompleted((details) => {
+                if (/flv/.test(details.url)) console.log(details.url);
+            });
+            webview.addEventListener('dom-ready', () => {
+                // console.log('dom-ready');
+            });
+
+            webview.addEventListener("ipc-message", (event) => {
+                // console.log("channel: " + event.channel, event)
+            })
+        },
+
+        beforeUpdate() {
 
         },
         data() {
             return {
+                preload: `file:${path.join(process.cwd(), "resources/preload.js")}`,
                 setting: {}
             };
         },
@@ -128,9 +149,10 @@
     });
 </script>
 
-<style  lang="scss">
+<style lang="scss">
     .v-setting {
-        padding-top:20px;
+        padding-top: 20px;
+
         input[type="file"] {
             display: none;
         }

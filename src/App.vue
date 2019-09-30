@@ -47,7 +47,6 @@
         margin: 0;
         user-select: none;
     }
-
     #app {
         display: flex;
         height: 100%;

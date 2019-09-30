@@ -1,11 +1,11 @@
 'use strict';
 
-import {app, protocol, BrowserWindow, ipcMain} from 'electron';
+import {app, protocol, BrowserWindow, ipcMain, session} from 'electron';
 import ipc from 'electron-better-ipc';
 import {createProtocol} from 'vue-cli-plugin-electron-builder/lib'
 
 const isDevelopment = process.env.NODE_ENV !== 'production';
-if(!app.requestSingleInstanceLock()&&!isDevelopment) app.quit();
+if (!app.requestSingleInstanceLock() && !isDevelopment) app.quit();
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let win: BrowserWindow | null;
@@ -22,7 +22,9 @@ function createWindow() {
         autoHideMenuBar: true,
         webPreferences: {
             nodeIntegration: true,
-            webSecurity: false
+            webSecurity: false,
+            webviewTag: true,
+            enableRemoteModule: true,
         }
     });
     if (process.env.WEBPACK_DEV_SERVER_URL) {
@@ -43,6 +45,7 @@ function createWindow() {
         win = null;
     })
 }
+
 // Quit when all windows are closed.
 app.on('window-all-closed', () => {
     // On macOS it is common for applications and their menu bar
@@ -78,7 +81,11 @@ app.on('ready', async () => {
         // }
 
     }
-    createWindow()
+    createWindow();
+    // @ts-ignore
+    // session.defaultSession.webRequest.onBeforeRequest({urls:['*://*./*']}, function (details, callback) {
+    //     console.log(details);
+    // });
 });
 
 
