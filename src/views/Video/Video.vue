@@ -13,17 +13,19 @@
                     <DatePicker v-model="dateText" @on-clear="clearDate()" @on-change="dateChange()" type="date"
                                 placeholder="选择日期"></DatePicker>
                 </Col>
-                <Col span="6">
+                <Col span="3">
                     <Button @click="resetData()">清空搜索</Button>
-
                 </Col>
-                <Col span="4">
-                    <Button @click="deleteAll()">删 除</Button>
+                <Col span="7">
+                    <Button @click="concatToMp4()" style="margin-right:10px">合 并</Button>
+                    <Button @click="deleteAll()" style="margin-right:10px">删 除</Button>
+                    <Button @click="openConcat()" icon="ios-folder">合成目录</Button>
                 </Col>
             </Row>
         </div>
         <div class="content">
-            <Table border :columns="headTable" :data="fileList" size="small" @on-selection-change="doSelectList"></Table>
+            <Table border :columns="headTable" :data="fileList" size="small"
+                   @on-selection-change="doSelectList"></Table>
         </div>
     </div>
 </template>

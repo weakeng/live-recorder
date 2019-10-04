@@ -1,5 +1,5 @@
 import Vue, {VNode} from 'vue'
-import {LiveInfoJson} from './vendor/live/Json';
+import {LiveInfoJson} from './vendor/Json';
 
 declare global {
     namespace JSX {

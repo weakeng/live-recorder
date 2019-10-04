@@ -1,8 +1,8 @@
 import fs from 'fs';
 import path from 'path';
-import {settingJson, LiveInfoJson} from "@/vendor/live/Json";
+import {settingJson, LiveInfoJson} from "@/vendor/Json";
 import Util from './Util';
-import Recorder from "@/vendor/Recorder";
+import Recorder from "@/vendor/resource/Recorder";
 
 class Cache {
     static readonly ROOM_LIST_FILE = path.join(process.cwd(), "resources/cache/", "room_list.json");
@@ -37,7 +37,7 @@ class Cache {
             data = {
                 "savePath": path.join(process.cwd(), "resources/video"),
                 "refreshTime": 10,
-                "videoTime": 20,
+                "videoTime": 60,
                 "notice": true
             };
             Util.mkdirsSync(data.savePath);

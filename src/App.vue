@@ -3,7 +3,7 @@
         <Nav></Nav>
         <Header></Header>
         <div class="main">
-            <keep-alive include="home">
+            <keep-alive :include="cachedViews">
                 <router-view></router-view>
             </keep-alive>
         </div>
@@ -22,7 +22,7 @@
     export default Vue.extend({
         data() {
             return {
-                cachedViews: ['home']
+                cachedViews: ['home','resource']
             }
         },
         async mounted() {
@@ -30,6 +30,7 @@
             // await live.refreshRoomData();
             // let l=await live.getLiveUrl();
             // console.log(live,l);
+
         },
         components: {
             Nav,
@@ -47,6 +48,7 @@
         margin: 0;
         user-select: none;
     }
+
     #app {
         display: flex;
         height: 100%;

@@ -2,7 +2,11 @@ import Vue from "Vue";
 import Util from "@/vendor/Util";
 import fs from "fs";
 import LiveFactory from "@/vendor/live/LiveFactory";
-
+import Notice from "@/vendor/Notice";
+import path from "path";
+import moment from "moment";
+import Resource from "@/vendor/resource/Resource";
+import Logger from "@/vendor/Logger";
 
 export default Vue.extend({
     mounted() {
@@ -17,6 +21,7 @@ export default Vue.extend({
             selectList: [],
             dateText: '',
             nickName: '',
+            logger: Logger.init(),
             headTable: [
                 {
                     type: 'selection',
@@ -109,7 +114,7 @@ export default Vue.extend({
         deleteAll() {
             let len = this.selectList.length;
             if (len <= 0) {
-                this.showInfo(`至少选中一项删除！`);
+                Notice.showInfo(this, `至少选中一项删除！`);
                 return;
             }
             this.$Modal.confirm({
@@ -125,7 +130,7 @@ export default Vue.extend({
                             }
                         });
                     }
-                    this.showInfo(`删除成功！`);
+                    Notice.showInfo(this, `删除成功！`);
                 }
             });
         },
@@ -214,10 +219,10 @@ export default Vue.extend({
                                 onOk: () => {
                                     fs.unlink(params.row.filePath, err => {
                                         if (err) {
-                                            this.showError('删除失败');
+                                            Notice.showError(this, '删除失败');
                                         } else {
                                             this.fileList.splice(params.index, 1);
-                                            this.showInfo('删除成功');
+                                            Notice.showInfo(this, '删除成功');
                                         }
                                     });
                                 }
@@ -242,13 +247,52 @@ export default Vue.extend({
                             if (fs.existsSync(path)) {
                                 shell.showItemInFolder(path);
                             } else {
-                                this.showError("打开文件出错了");
+                                Notice.showError(this, "打开文件出错了");
                             }
 
                         }
                     }
                 })
             ]);
+        },
+        openConcat() {
+            require("electron").shell.openExternal(path.join(Util.getConcatSavePath(), moment().format('YYYYMMDD')));
+        },
+        concatToMp4() {
+            if (this.fileList.length <= 1) {
+                Notice.showError(this, "请选择2个以上视频进行合并！");
+                return;
+            }
+            this.fileList.sort((file1: any, file2: any) => {
+                return file1['time'] - file2['time'];
+            });
+
+            let nickName = this.nickName;
+            let dateText = moment().format('YYYYMMDD');
+            let timeText = moment().format('HHmmss');
+            let savePath = path.join(Util.getConcatSavePath(), dateText);
+            let fileList = path.join(savePath, `${dateText}~${timeText}.txt`);
+            let outFileName = path.join(savePath, `${dateText}~${timeText}.mp4`);
+            let res = Util.mkdirsSync(savePath);
+            if (!res) {
+                this.logger.error("创建合成视频目录失败", savePath);
+                Notice.showError(this, "创建合成视频目录失败");
+                return;
+            }
+
+            this.fileList.forEach((file) => {
+                // @ts-ignore
+                let filepath = file['filePath'];
+                fs.appendFileSync(fileList, `file '${filepath}'\n`);
+            });
+            let stopFunc = Resource.concat(fileList, outFileName, () => {
+                Notice.showInfo(this, "合成成功");
+                fs.existsSync(fileList) && fs.unlinkSync(fileList);
+            }, (err: any) => {
+                this.logger.error("合成失败！", err, fileList, outFileName);
+                Notice.showError(this, "合成失败");
+                fs.existsSync(fileList) && fs.unlinkSync(fileList);
+            })
         },
         getSiteNameFilters() {
             let list = LiveFactory.getAllSiteName();
@@ -262,20 +306,6 @@ export default Vue.extend({
             });
             //@ts-ignore
             return fiterList;
-        },
-        showInfo(msg: any) {
-            msg = typeof msg == "string" ? msg : JSON.stringify(msg);
-            this.$Notice.info({
-                title: '信息',
-                desc: msg
-            });
-        },
-        showError(msg: any) {
-            msg = typeof msg == "string" ? msg : JSON.stringify(msg);
-            this.$Notice.error({
-                title: '信息',
-                desc: msg
-            });
         }
     }
 });

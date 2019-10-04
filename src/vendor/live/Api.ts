@@ -1,4 +1,4 @@
-import {SiteJson, StreamJson} from "./Json";
+import {SiteJson, StreamJson} from "../Json";
 
 interface Api {
     getLiveUrl(): Array<StreamJson>;

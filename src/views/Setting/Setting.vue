@@ -33,21 +33,15 @@
                 <Button @click="reset()">恢复默认设置</Button>
             </FormItem>
         </Form>
-
-        <webview id="webview" src="http://inke.cn/live.html?uid=730199258&id=1569823360634861" style="display:inline-flex; width:100%; height:300px"
-                 :preload="preload"></webview>
     </div>
 </template>
-
 
 <script>
     import Vue from "Vue";
     import Cache from "../../vendor/Cache";
     import path from "path";
     import fs from "fs";
-    import {settingJson} from "../../vendor/live/Json";
-    import Util from "@/vendor/Util";
-
+    import Notice from "@/vendor/Notice";
 
     export default Vue.extend({
         mounted() {
@@ -62,26 +56,12 @@
                 setting
             );
 
-            const webview = document.querySelector('webview');
-            let webRequest = webview.getWebContents().session.webRequest;
-            webRequest.onCompleted((details) => {
-                if (/flv/.test(details.url)) console.log(details.url);
-            });
-            webview.addEventListener('dom-ready', () => {
-                // console.log('dom-ready');
-            });
-
-            webview.addEventListener("ipc-message", (event) => {
-                // console.log("channel: " + event.channel, event)
-            })
         },
 
-        beforeUpdate() {
-
+        beforeDestroy() {
         },
         data() {
             return {
-                preload: `file:${path.join(process.cwd(), "resources/preload.js")}`,
                 setting: {}
             };
         },
@@ -118,10 +98,7 @@
                             return;
                         }
                         Cache.writeConfig(this.setting);
-                        this.$Notice.info({
-                            title: "信息",
-                            desc: "设置已生效"
-                        });
+                        Notice.showInfo(this, '设置已生效');
                     }
                 });
             },
@@ -138,10 +115,7 @@
                         };
                         this.setting = setting;
                         Cache.writeConfig(setting);
-                        this.$Notice.info({
-                            title: "信息",
-                            desc: "已恢复默认设置"
-                        });
+                        Notice.showInfo(this, '已恢复默认设置');
                     }
                 });
             }
@@ -156,8 +130,6 @@
         input[type="file"] {
             display: none;
         }
-
     }
-
 </style>
 

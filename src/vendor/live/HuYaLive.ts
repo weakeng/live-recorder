@@ -1,6 +1,6 @@
 import Live from "./Live";
 import Http from "../Http";
-import {SiteJson, StreamJson} from "./Json";
+import {SiteJson, StreamJson} from "../Json";
 
 class HuYaLive extends Live {
     public static readonly SITE: SiteJson = {
@@ -20,7 +20,7 @@ class HuYaLive extends Live {
     }
 
     public async refreshRoomData() {
-        let body = await Http.request({url: this.roomUrl,'header': {Referer: 'https://www.huya.com'}}).catch(() => {
+        let body = await Http.request({url: this.roomUrl, 'header': {Referer: 'https://www.huya.com'}}).catch(() => {
             throw `获取房间信息失败,网络异常,${HuYaLive.SITE.SITE_NAME}(${this.roomUrl})`;
         });
         let match_title = body.match(/<h1 id="J_roomTitle" title="(.*?)">(.*?)<\/h1>/);
@@ -55,7 +55,11 @@ class HuYaLive extends Live {
         body = body.replace(/&amp;/g, 'A=========B');
         let match_config = body.match(/hyPlayerConfig = ([^;]+);/);
         let data = JSON.parse(match_config[1]);
-        if (data.stream) {
+        if (data.stream && data.stream.data && data.stream.data[0]
+            && typeof data.stream.data[0].gameStreamInfoList
+            && data.stream.data[0].gameStreamInfoList instanceof Array
+            && data.stream.data[0].gameStreamInfoList
+            && data.stream.data[0].gameStreamInfoList.length > 0) {
             let urlList = data.stream.data[0].gameStreamInfoList;
             let rateList = data.stream.vMultiStreamInfo;
             let liveList = [];

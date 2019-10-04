@@ -25,12 +25,21 @@
                     <span class="title">软件设置</span>
                 </div>
             </a>
+            <a class="item" :class="{'active':3===activeIndex}" @click="selectMenu(3)">
+                <div class="menu-icon">
+                    <Icon type="md-eye" size="55" color="#FFF"></Icon>
+                </div>
+                <div class="menu-title">
+                    <span class="title">资源探测</span>
+                </div>
+            </a>
         </div>
     </div>
 </template>
 
 <script lang="ts">
     import Vue from "vue";
+
     export default Vue.extend({
         data() {
             return {
@@ -39,7 +48,7 @@
         },
         methods: {
             selectMenu(index: number) {
-                if(this.activeIndex===index) return;
+                if (this.activeIndex === index) return;
                 this.activeIndex = index;
                 switch (index) {
                     case 0:
@@ -50,6 +59,9 @@
                         break;
                     case 2:
                         this.$router.push({name: 'setting'});
+                        break;
+                    case 3:
+                        this.$router.push({name: 'resource'});
                         break;
                 }
             }

@@ -1,16 +1,17 @@
 import Vue from "vue";
 import LiveFactory from "../../vendor/live/LiveFactory";
-import Recorder from "../../vendor/Recorder";
+import Recorder from "../../vendor/resource/Recorder";
 import path from "path";
 import Cache from "../../vendor/Cache";
 import Util from "../../vendor/Util";
 import Logger from "../../vendor/Logger";
 import Live from "../../vendor/live/Live";
-import {LiveInfoJson, StreamJson} from "@/vendor/live/Json";
+import {LiveInfoJson, StreamJson} from "@/vendor/Json";
 import fs from "fs";
 import moment from "moment";
 import ipc from "electron-better-ipc";
 import {remote} from "electron";
+import Notice from "../../vendor/Notice";
 
 export default Vue.extend({
     name: "home",
@@ -57,7 +58,7 @@ export default Vue.extend({
             }
             if (cmdNum > 10) {
                 this.liveInfoList[index].isAutoRecord = false;
-                this.showInfo('最多10个任务，达到录制上限自动暂停。。。');
+                Notice.showInfo(this, '最多10个任务，达到录制上限自动暂停。。。');
                 this.logger.error('最多10个任务，达到录制上限自动暂停。。。...', roomUrl);
                 this.cmdList[roomUrl] = null;
                 this.liveInfoList[index]['recordStatus'] = Recorder.STATUS_PAUSE;
@@ -71,7 +72,6 @@ export default Vue.extend({
                 live = LiveFactory.getLive(roomUrl);
                 await live.refreshRoomData();
                 if (!live.getLiveStatus()) {
-                    this.showError(`${nickName} 暂未开播!`);
                     this.cmdList[roomUrl] = null;
                     this.liveInfoList[index]['recordStatus'] = Recorder.STATUS_PAUSE;
                     return;
@@ -79,7 +79,6 @@ export default Vue.extend({
                 list = await live.getLiveUrl();
             } catch (error) {
                 this.logger.error('获取直播源失败', error);
-                this.showError(`获取直播源失败,${nickName}`);
                 this.cmdList[roomUrl] = null;
                 this.liveInfoList[index]['recordStatus'] = Recorder.STATUS_AWAIT_RECORD;
                 return;
@@ -91,7 +90,6 @@ export default Vue.extend({
                     if (this.liveInfoList[i].roomUrl == recorder.id) {
                         this.cmdList[recorder.id] = null;
                         this.liveInfoList[i]['recordStatus'] = Recorder.STATUS_AWAIT_RECORD;
-                        this.showError(`${live.getNickName()} 录制出错了。。。`);
                         this.logger.error(`${live.getNickName()} ${recorder.id} 录制出错了。。。`, err);
                         flag = true;
                         break;
@@ -109,11 +107,11 @@ export default Vue.extend({
                             this.cmdList[recorder.id] = null;
                             this.liveInfoList[i]['recordStatus'] = Recorder.STATUS_AWAIT_RECORD;
                             this.logger.info(`${live.getNickName()} ${recorder.id} 录制完成。。。切换为待录制状态`);
-                            this.showInfo(`${live.getNickName()} 录制完成,等待自动录制中。。。`);
+                            Notice.showInfo(this, `${live.getNickName()} 录制完成,等待自动录制中。。。`);
                             return;
                         }
                         this.logger.info(`${live.getNickName()} ${recorder.id} 录制完成。。。`);
-                        this.showInfo(`${live.getNickName()} 录制完成`);
+                        Notice.showInfo(this, `${live.getNickName()} 录制完成`);
                         flag = true;
                         break;
                     }
@@ -132,14 +130,13 @@ export default Vue.extend({
             let res = Util.mkdirsSync(savePath);
             if (!res) {
                 this.logger.error("创建下载目录失败", savePath);
-                this.showError("创建下载目录失败");
                 this.cmdList[roomUrl] = null;
                 this.liveInfoList[index]['recordStatus'] = Recorder.STATUS_PAUSE;
                 this.liveInfoList[index]['isAutoRecord'] = false;
                 return;
             }
             savePath = path.join(savePath, fileName);
-            this.showInfo(`${live.getNickName()} 开始录制。。。`);
+            Notice.showInfo(this, `${live.getNickName()} 开始录制。。。`);
             this.logger.info(`${live.getNickName()} ${roomUrl} 开始录制。。。`);
             this.cmdList[roomUrl] = recorder.record(list[0]["liveUrl"], savePath);
         },
@@ -149,7 +146,7 @@ export default Vue.extend({
             let time1 = new Date().getTime();
             let func = () => {
                 let time2 = new Date().getTime();
-                this.logger.debug(`执行定时器:${id}`);
+                // this.logger.debug(`执行定时器:${id}`);
                 Cache.writeRoomList(this.liveInfoList);
                 Promise.all(this.liveInfoList.map(async (room: LiveInfoJson, index: number) => {
                     // this.logger.info(`Promise.all :${room.roomUrl} ${index}`);
@@ -232,7 +229,6 @@ export default Vue.extend({
                 try {
                     live = LiveFactory.getLive(this.siteAddress);
                 } catch (error) {
-                    this.showError(error);
                     this.logger.error(error);
                     return;
                 }
@@ -240,12 +236,10 @@ export default Vue.extend({
                 try {
                     live = LiveFactory.getLiveByRoomId(this.siteCode, this.roomNumber);
                 } catch (error) {
-                    this.showError(error);
                     this.logger.error(error);
                     return;
                 }
             } else {
-                this.showError("出错了。。。");
                 this.logger.error('出错了。。。');
                 return;
             }
@@ -267,7 +261,7 @@ export default Vue.extend({
                 // console.log(live);
                 for (let i = 0; i < this.liveInfoList.length; i++) {
                     if (this.liveInfoList[i].roomUrl === live.roomUrl) {
-                        this.showInfo("该主播已存在。。。");
+                        Notice.showInfo(this, "该主播已存在。。。");
                         return;
                     }
                 }
@@ -277,7 +271,6 @@ export default Vue.extend({
                 this.cmdList[live.roomUrl] = null;
             } catch (error) {
                 this.logger.error(error);
-                this.showError(error);
             }
             this.siteAddress = '';
             this.roomNumber = '';
@@ -456,7 +449,6 @@ export default Vue.extend({
                             if (recording) return;
                             // @ts-ignore
                             if (this.cmdList[params['row']['roomUrl']]) {
-                                this.showError(`请不要重复点击,请耐心等待视频解析。。。`);
                                 this.logger.error(`${params['row']['nickName']}  重复录制了。。。`);
                             }
                             await this.recordRoomUrl(params.index, params['row']['roomUrl']);
@@ -485,7 +477,6 @@ export default Vue.extend({
                                     Recorder.stop(this.cmdList[params.row.roomUrl]);
                                     this.cmdList[params.row.roomUrl] = null;
                                 } catch (error) {
-                                    this.showError("暂停出错了");
                                     this.logger.error(`${params.row.nickName} 暂停出错了。。。`, error);
                                 }
                             } else {
@@ -533,7 +524,7 @@ export default Vue.extend({
                             if (fs.existsSync(savePath)) {
                                 shell.showItemInFolder(savePath);
                             } else {
-                                this.showInfo("录制文件为空");
+                                Notice.showInfo(this, "录制文件为空");
                             }
 
                         }
@@ -584,20 +575,6 @@ export default Vue.extend({
                         }, 100);
                     }
                 })
-            });
-        },
-        showInfo(msg: any) {
-            msg = typeof msg == "string" ? msg : JSON.stringify(msg);
-            this.$Notice.info({
-                title: '信息',
-                desc: msg
-            });
-        },
-        showError(msg: any) {
-            msg = typeof msg == "string" ? msg : JSON.stringify(msg);
-            this.$Notice.error({
-                title: '信息',
-                desc: msg
             });
         }
     }

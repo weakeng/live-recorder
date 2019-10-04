@@ -1,4 +1,4 @@
-import {SiteJson, StreamJson} from "./Json";
+import {SiteJson, StreamJson} from "../Json";
 import Api from "./Api";
 
 abstract class Live implements Api {

@@ -3,6 +3,7 @@ import Router from 'vue-router'
 import Home from './views/Home/Home.vue'
 import Video from './views/Video/Video.vue'
 import Setting from './views/Setting/Setting.vue'
+import Resource from './views/Resource/Resource.vue'
 
 Vue.use(Router);
 
@@ -22,6 +23,11 @@ export default new Router({
             path: '/setting',
             name: 'setting',
             component: Setting,
+        },
+        {
+            path: '/resource',
+            name: 'resource',
+            component: Resource,
         },
         {
             path: '*',

@@ -1,5 +1,5 @@
 import Live from "./Live";
-import { SiteJson, StreamJson } from "./Json";
+import { SiteJson, StreamJson } from "../Json";
 import Http from "../Http";
 
 class YYLive extends Live {

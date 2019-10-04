@@ -1,6 +1,6 @@
 import Live from "./Live";
 import Http from "../Http";
-import {SiteJson, StreamJson} from "./Json";
+import {SiteJson, StreamJson} from "../Json";
 
 class DouYuLive extends Live {
     public static readonly SITE: SiteJson = {

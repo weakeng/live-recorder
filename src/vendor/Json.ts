@@ -33,5 +33,22 @@ interface settingJson {
     notice: boolean,
 }
 
-export {SiteJson, StreamJson, LiveInfoJson,settingJson};
+interface settingJson {
+    savePath: string,
+    refreshTime: number,
+    videoTime: number,
+    notice: boolean,
+}
+
+interface ResourceJson {
+    url: string,
+    resourceUrl: string,
+    id: number,
+    addTime: number,
+    downloadStatus: number,
+    name: string,
+    type: number,
+}
+
+export {SiteJson, StreamJson, LiveInfoJson, settingJson, ResourceJson};
 

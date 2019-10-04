@@ -30,7 +30,7 @@ module.exports = {
                     "createStartMenuShortcut": true,// 创建开始菜单图标
                     "shortcutName": "直播录制小助手", // 图标名称
                 },
-                appId: "com.gsonhub.recorder",
+                appId: "com.live.recorder",
                 // extraFiles: ['./resources/bin/']
             },
             chainWebpackRendererProcess: config => {

@@ -16,7 +16,7 @@ function createWindow() {
     // Create the browser window.
     win = new BrowserWindow({
         width: 900,
-        height: 648,
+        height: 680,//648,
         resizable: false,
         frame: false,
         autoHideMenuBar: true,
@@ -24,9 +24,10 @@ function createWindow() {
             nodeIntegration: true,
             webSecurity: false,
             webviewTag: true,
-            enableRemoteModule: true,
+            enableRemoteModule: true
         }
     });
+
     if (process.env.WEBPACK_DEV_SERVER_URL) {
         // Load the url of the dev server if in development mode
         win.loadURL(process.env.WEBPACK_DEV_SERVER_URL as string);
@@ -43,7 +44,7 @@ function createWindow() {
     });
     win.on('closed', () => {
         win = null;
-    })
+    });
 }
 
 // Quit when all windows are closed.
@@ -55,6 +56,7 @@ app.on('window-all-closed', () => {
     }
 });
 
+
 app.on('activate', () => {
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
@@ -62,7 +64,6 @@ app.on('activate', () => {
         createWindow()
     }
 });
-
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
