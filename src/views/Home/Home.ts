@@ -50,8 +50,6 @@ export default Vue.extend({
             }
             this.liveInfoList[index]['recordStatus'] = Recorder.STATUS_RECORDING;
             this.cmdList[roomUrl] = true;
-
-            let nickName = this.liveInfoList[index]['nickName'];
             let cmdNum = 0;
             for (let roomUrl in this.cmdList) {
                 if (this.cmdList.hasOwnProperty(roomUrl)) cmdNum++;
@@ -141,15 +139,12 @@ export default Vue.extend({
             this.cmdList[roomUrl] = recorder.record(list[0]["liveUrl"], savePath);
         },
         refreshRoomData() {
-            let id = new Date().getSeconds();
             let setting = Cache.getConfig();
             let time1 = new Date().getTime();
             let func = () => {
                 let time2 = new Date().getTime();
-                // this.logger.debug(`执行定时器:${id}`);
                 Cache.writeRoomList(this.liveInfoList);
                 Promise.all(this.liveInfoList.map(async (room: LiveInfoJson, index: number) => {
-                    // this.logger.info(`Promise.all :${room.roomUrl} ${index}`);
                     let live = LiveFactory.getLive(room.roomUrl);
                     try {
                         await live.refreshRoomData();
@@ -164,14 +159,11 @@ export default Vue.extend({
                     if (room['liveStatus'] && room['isAutoRecord'] && room['recordStatus'] == Recorder.STATUS_PAUSE) {
                         room['recordStatus'] = Recorder.STATUS_AWAIT_RECORD;
                     }
-                    if (!room['liveStatus'] && room['recordStatus'] == Recorder.STATUS_RECORDING) {
-                        room['recordStatus'] = Recorder.STATUS_PAUSE;
+                    if (!room['liveStatus'] && (room['recordStatus'] == Recorder.STATUS_RECORDING || room['recordStatus'] == Recorder.STATUS_AWAIT_RECORD)) {
                         this.logger.info(`${room.nickName} ${room['roomUrl']} 自动暂停`);
-                        try {
-                            Recorder.stop(this.cmdList[room['roomUrl']]);
-                        } catch (e) {
-                            this.logger.error(`自动暂停失败`, room.nickName, e);
-                        }
+                        room['recordStatus'] = Recorder.STATUS_PAUSE;
+                        this.cmdList[room['roomUrl']] && Recorder.stop(this.cmdList[room['roomUrl']]);
+                        this.cmdList[room['roomUrl']] = null;
                     }
                     if (room['recordStatus'] == Recorder.STATUS_AWAIT_RECORD && room['liveStatus']) {
                         await this.recordRoomUrl(index, room['roomUrl']);
@@ -187,14 +179,6 @@ export default Vue.extend({
                         setting.notice && new Notification(notification.title, notification);
                         this.logger.info(`${room.siteName}(${room.nickName})开播了`);
                     } else if (room.oldStatus && !room.liveStatus && (time2 - time1) > 60000) {
-                        const notification = {
-                            title: `${room.siteName}(${room.nickName})下播了`,
-                            body: '主播下播了，快去看看自己录制的视频吧！',
-                            icon: room.headIcon,
-                            requireInteraction: true,
-                            sticky: true,
-                        };
-                        setting.notice && new Notification(notification.title, notification);
                         this.logger.info(`${room.siteName}(${room.nickName})下播了`);
                     }
                 })).then(() => {
@@ -539,6 +523,8 @@ export default Vue.extend({
                     content: `是否确认退出`,
                     loading: true,
                     onOk: () => {
+                        // @ts-ignore
+                        this.interval && clearInterval(this.interval);
                         this.logger.info("BrowserWindow 退出,把所有录制状态设为暂停录制");
                         this.liveInfoList.forEach((item: any) => {
                             item['recordStatus'] = Recorder.STATUS_PAUSE;

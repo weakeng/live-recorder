@@ -2,7 +2,7 @@
     <div class="v-setting">
         <Form ref="form" :label-width="120">
             <FormItem label="开启录播通知">
-                <i-switch size="large" v-model="setting.notice"/>
+                <i-switch size="large" v-model="setting.notice"></i-switch>
             </FormItem>
             <FormItem label="刷新直播间隔" prop="checkInterval">
                 <InputNumber
@@ -25,7 +25,7 @@
             <FormItem label="视频保存路径" prop="saveFolder" style="width: 400px">
                 <input ref="saveFolder" type="file" webkitdirectory @change="onSaveFolderSelect"/>
                 <i-input v-model="setting.savePath" readonly :title="setting.savePath">
-                    <Icon type="md-folder" slot="suffix" @click="$refs.saveFolder.click()"/>
+                    <Icon type="md-folder" slot="suffix" @click="$refs.saveFolder.click()"></Icon>
                 </i-input>
             </FormItem>
             <FormItem class="buttons">

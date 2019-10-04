@@ -45,7 +45,7 @@ class DouYuLive extends Live {
         let res = body.match(/\$ROOM.room_id =(\d+);/);
         if (res && res[1]) {
             let roomId = res[1];
-            let url = DouYuLive.API_ROOM_INFO.replace(/%s/, res[1]);
+            let url = DouYuLive.API_ROOM_INFO.replace(/%s/, roomId);
             res = await Http.request({url: url}).catch(() => {
                 throw `获取直播源信息失败,网络异常,${DouYuLive.SITE.SITE_NAME}(${this.roomUrl})`;
             });
