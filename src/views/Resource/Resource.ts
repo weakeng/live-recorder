@@ -55,7 +55,6 @@ export default Vue.extend({
                     key: 'action',
                     align: 'center',
                     render: (h: any, params: any) => {
-
                         // @ts-ignore
                         return this.renderAction(h, params);
                     }

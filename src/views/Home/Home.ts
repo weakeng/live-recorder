@@ -50,20 +50,6 @@ export default Vue.extend({
             }
             this.liveInfoList[index]['recordStatus'] = Recorder.STATUS_RECORDING;
             this.cmdList[roomUrl] = true;
-            let cmdNum = 0;
-            for (let roomUrl in this.cmdList) {
-                if (this.cmdList.hasOwnProperty(roomUrl)) cmdNum++;
-            }
-            if (cmdNum > 10) {
-                this.liveInfoList[index].isAutoRecord = false;
-                Notice.showInfo(this, '最多10个任务，达到录制上限自动暂停。。。');
-                this.logger.error('最多10个任务，达到录制上限自动暂停。。。...', roomUrl);
-                this.cmdList[roomUrl] = null;
-                this.liveInfoList[index]['recordStatus'] = Recorder.STATUS_PAUSE;
-                this.liveInfoList[index]['isAutoRecord'] = false;
-                return;
-            }
-
             let list: Array<StreamJson> = [];
             let live: Live;
             try {

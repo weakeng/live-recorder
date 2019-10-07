@@ -47,7 +47,7 @@ class EgameLive extends Live {
         let match_faceUrl = body.match(/<img src="(.*?)" alt="profileInfo.nickName"/);
         let match_roomId = body.match(/pid:"(\d+)_/);
         // console.log(match_title, match_nick, match_isLive, match_faceUrl, match_roomId);
-        if (match_title[1]) {
+        if (match_roomId[1]) {
             this.setTitle(match_title[1]);
             this.setNickName(match_nick[1]);
             this.setHeadIcon((match_faceUrl[1]));
