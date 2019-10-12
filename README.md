@@ -16,32 +16,32 @@ live-recorder是一个支持多家直播平台的直播录制工具，运行在 
     </tr>
     <tr align="center">
         <td>斗鱼直播</td>
-        <td>www.douyu.com</td>
+        <td>https://www.douyu.com</td>
         <td>✓</td>
     </tr>
     <tr align="center">
         <td>虎牙直播</td>
-        <td>www.huya.com</td>
+        <td>https://www.huya.com</td>
         <td>✓</td>
     </tr>
     <tr align="center">
         <td>CC直播</td>
-        <td>cc.163.com</td>
+        <td>https://cc.163.com</td>
         <td>✓</td>
     </tr>
     <tr align="center">
         <td>企鹅电竞</td>
-        <td>egame.qq.com</td>
+        <td>https://egame.qq.com</td>
         <td>✓</td>
     </tr>
         <tr align="center">
         <td>映客直播</td>
-        <td>inke.cn</td>
+        <td>http://inke.cn</td>
         <td>✓</td>
     </tr>
     <tr align="center">
         <td>花椒直播</td>
-        <td>huajiao.com</td>
+        <td>https://huajiao.com</td>
         <td>✓</td>
     </tr>
     <tr align="center">
@@ -61,7 +61,7 @@ live-recorder是一个支持多家直播平台的直播录制工具，运行在 
 yarn (or 'npm install')
 
 
-# serve with hot reload at localhost:9080
+# serve with hot reload at localhost:8080
 yarn electron:serve (or 'npm run electron:serve')
 
 # build electron application for production
