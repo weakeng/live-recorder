@@ -46,7 +46,7 @@ live-recorder是一个支持多家直播平台的直播录制工具，运行在 
     </tr>
     <tr align="center">
         <td>YY直播</td>
-        <td>yy.com</td>
+        <td>https://yy.com</td>
         <td>✓</td>
     </tr>
 </table>
