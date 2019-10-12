@@ -23,6 +23,7 @@ abstract class Live implements Api {
 
     public setRoomId(roomId: number) {
         this.roomId = roomId;
+        return this;
     }
 
     public getRoomId() {
@@ -31,6 +32,7 @@ abstract class Live implements Api {
 
     public setNickName(nickName: string) {
         this.nickName = nickName;
+        return this;
     }
 
     public getNickName() {
@@ -39,6 +41,7 @@ abstract class Live implements Api {
 
     public setHeadIcon(headIcon: string) {
         this.headIcon = headIcon;
+        return this;
     }
 
     public getHeadIcon() {
@@ -47,6 +50,7 @@ abstract class Live implements Api {
 
     public setTitle(title: string) {
         this.title = title;
+        return this;
     }
 
     public getTitle() {
@@ -55,6 +59,7 @@ abstract class Live implements Api {
 
     public setCover(cover: string) {
         this.cover = cover;
+        return this;
     }
 
     public getCover() {
@@ -63,6 +68,7 @@ abstract class Live implements Api {
 
     public setLiveStatus(liveStatus: boolean) {
         this.liveStatus = liveStatus;
+        return this;
     }
 
     public getLiveStatus() {

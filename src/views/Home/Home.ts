@@ -58,6 +58,7 @@ export default Vue.extend({
                 if (!live.getLiveStatus()) {
                     this.cmdList[roomUrl] = null;
                     this.liveInfoList[index]['recordStatus'] = Recorder.STATUS_PAUSE;
+                    Notice.showError(this,`主播(${live.getNickName()})尚未开播!`);
                     return;
                 }
                 list = await live.getLiveUrl();

@@ -25,19 +25,20 @@
                 cachedViews: ['home','resource']
             }
         },
+
+
         async mounted() {
-            // let live= LiveFactory.getLive("https://www.huajiao.com/l/290558291?hd=1");
+            // let live= LiveFactory.getLive("https://www.huajiao.com/user/184800796");
             // await live.refreshRoomData();
+            // console.log(live);
             // let l=await live.getLiveUrl();
             // console.log(live,l);
-
         },
         components: {
             Nav,
             Header,
             Footer
         }
-
     });
 </script>
 <style lang="scss">

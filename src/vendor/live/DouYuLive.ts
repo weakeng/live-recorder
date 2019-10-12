@@ -1,6 +1,7 @@
 import Live from "./Live";
 import Http from "../Http";
 import {SiteJson, StreamJson} from "../Json";
+import CryptoJS from "../md5";
 
 class DouYuLive extends Live {
     public static readonly SITE: SiteJson = {
@@ -11,29 +12,47 @@ class DouYuLive extends Live {
         BASE_ROOM_URL: 'https://www.douyu.com/%s',
     };
     static readonly API_ROOM_INFO = "https://open.douyucdn.cn/api/RoomApi/room/%s";
-    static readonly API_LIVE_INFO = "http://rpc.paomianfan.com:27020/?action=videoUrl&roomUrl=ROOM_URL&roomId=ROOM_ID";
+    static readonly API_ENC_SIGN = "https://www.douyu.com/swf_api/homeH5Enc?rids=%s";
+    static readonly API_GET_LIVE_URL = "https://www.douyu.com/lapi/live/getH5Play/%s";
 
     public constructor(roomUrl: string) {
         super(roomUrl);
     }
 
     async getLiveUrl() {
-        let url = DouYuLive.API_LIVE_INFO.replace(/ROOM_URL/, this.roomUrl).replace(/ROOM_ID/, `${this.roomId}`);
-        let res = await Http.request({url: url}).catch(() => {
-            throw `获取直播源信息失败！网络异常,${DouYuLive.SITE.SITE_NAME}(${this.roomUrl})`;
+        let url = DouYuLive.API_ENC_SIGN.replace(/%s/, `${this.roomId}`);
+        let data = await Http.request({url: url, 'header': {Referer: 'https://www.douyu.com'}}).catch(() => {
+            throw `获取直播源信息失败,网络异常,${DouYuLive.SITE.SITE_NAME}(${this.roomUrl}) ${url}`;
         });
-        if (res && res['error'] == 200 && res['data'] && res['data']['videoUrl']) {
-            let liveList = [];
-            let item: StreamJson = {
-                quality: '超清',
-                lineIndex: '主线路',
-                liveUrl: res['data']['videoUrl'],
-            };
-            liveList.push(item);
-            //todo 缓存处理
-            return liveList;
+        if (data['data'] && data['data'][`room${this.roomId}`]) {
+            let did = `did${Date.now()}`;//获取随机变量
+            let time = Math.ceil(Date.now() / 1000);
+            let code = data['data'][`room${this.roomId}`];
+            const jsCode = `${CryptoJS};${code};ub98484234('${this.roomId}','${did}',${time})`;
+            let sign = eval(jsCode);
+            url = DouYuLive.API_GET_LIVE_URL.replace(/%s/, `${this.roomId}`);
+            url = `${url}?${sign}`;
+            let res = await Http.request({
+                url: url,
+                header: {Referer: 'https://www.douyu.com'},
+                method: "post"
+            }).catch(() => {
+                throw `获取直播源信息失败,网络异常,${DouYuLive.SITE.SITE_NAME}(${this.roomUrl}) ${url}`;
+            });
+            if (res && res['error'] === 0 && res['data'] && res['data']['rtmp_url'] && res['data']['rtmp_live']) {
+                let liveList: Array<StreamJson> = [];
+                let item: StreamJson = {
+                    quality: '超清',
+                    lineIndex: '主线路',
+                    liveUrl: `${res['data']['rtmp_url']}/${res['data']['rtmp_live']}`,
+                };
+                liveList.push(item);
+                return liveList;
+            } else {
+                throw `获取直播源信息失败！接口异常,无法获取信息,${DouYuLive.SITE.SITE_NAME}(${this.roomUrl}) ` + JSON.stringify(res);
+            }
         } else {
-            throw `获取直播源信息失败！主播未开播或房间地址有误,${DouYuLive.SITE.SITE_NAME}(${this.roomUrl}) `+JSON.stringify(res);
+            throw `获取直播源信息失败,无法匹配签名信息,${DouYuLive.SITE.SITE_NAME}(${this.roomUrl})`;
         }
     }
 
