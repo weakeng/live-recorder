@@ -63,8 +63,9 @@ class Recorder {
 
     public static stop(command: any) {
         if (command) {
-            // console.log(command);
-            command.ffmpegProc && command.ffmpegProc.stdin.write('q')
+            command.ffmpegProc.stdin.write('q');
+            command.ffmpegProc.stdin.write('q');
+            command.ffmpegProc.stdin.end();
         } else {
             throw '无法暂停此任务';
         }
