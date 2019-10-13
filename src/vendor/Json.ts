@@ -40,6 +40,7 @@ interface settingJson {
     notice: boolean,
 }
 
+
 interface ResourceJson {
     url: string,
     resourceUrl: string,
@@ -50,5 +51,15 @@ interface ResourceJson {
     type: number,
 }
 
-export {SiteJson, StreamJson, LiveInfoJson, settingJson, ResourceJson};
+interface Cmd {
+    [key: string]: any
+}
+
+interface WebViewData {
+    readonly userAgent: string,
+    src: string,
+    preload: string
+}
+
+export {SiteJson, StreamJson, LiveInfoJson, settingJson, ResourceJson, Cmd, WebViewData};
 

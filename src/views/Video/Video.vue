@@ -19,7 +19,7 @@
                 <Col span="7">
                     <Button @click="concatToMp4()" style="margin-right:10px">合 并</Button>
                     <Button @click="deleteAll()" style="margin-right:10px">删 除</Button>
-                    <Button @click="openConcat()" icon="ios-folder">合成目录</Button>
+                    <Button @click="openConcatPath()" icon="ios-folder">合成目录</Button>
                 </Col>
             </Row>
         </div>

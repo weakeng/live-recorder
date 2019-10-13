@@ -38,35 +38,32 @@
 </template>
 
 <script lang="ts">
-    import Vue from "vue";
+    import {Vue,Component} from "vue-property-decorator"
 
-    export default Vue.extend({
-        data() {
-            return {
-                activeIndex: 0,
-            }
-        },
-        methods: {
-            selectMenu(index: number) {
-                if (this.activeIndex === index) return;
-                this.activeIndex = index;
-                switch (index) {
-                    case 0:
-                        this.$router.push({name: 'home'});
-                        break;
-                    case 1:
-                        this.$router.push({name: 'video'});
-                        break;
-                    case 2:
-                        this.$router.push({name: 'setting'});
-                        break;
-                    case 3:
-                        this.$router.push({name: 'resource'});
-                        break;
-                }
+    @Component
+    export default class extends Vue {
+        private activeIndex = 0;
+
+        selectMenu(index: number) {
+            if (this.activeIndex === index) return;
+            this.activeIndex = index;
+            switch (index) {
+                case 0:
+                    this.$router.push({name: 'home'});
+                    break;
+                case 1:
+                    this.$router.push({name: 'video'});
+                    break;
+                case 2:
+                    this.$router.push({name: 'setting'});
+                    break;
+                case 3:
+                    this.$router.push({name: 'resource'});
+                    break;
             }
         }
-    });
+    }
+
 </script>
 
 <style lang="scss" scoped>

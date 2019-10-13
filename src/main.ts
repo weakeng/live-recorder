@@ -4,7 +4,8 @@ import router from './router'
 import store from './store'
 import 'iview/dist/styles/iview.css';
 import iview from 'iview';
-import Logger from "@/vendor/Logger";
+
+
 
 Vue.use(iview);
 Vue.prototype.cmdList = {};

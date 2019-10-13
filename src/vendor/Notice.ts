@@ -1,4 +1,4 @@
-import Vue from "Vue";
+import {Vue} from "vue-property-decorator"
 
 class Notice {
     public static showInfo(self: Vue, msg: any) {

@@ -14,19 +14,20 @@
 </template>
 
 <script lang="ts">
-    import Vue from "vue";
+    import {Vue,Component} from "vue-property-decorator"
     import {remote} from "electron"
 
-    export default Vue.extend({
-        methods: {
-            minFrame() {
-                remote.getCurrentWindow().minimize();
-            },
-            closeFrame() {
-                remote.getCurrentWindow().close();
-            }
+    @Component
+    export default class extends Vue {
+        minFrame() {
+            remote.getCurrentWindow().minimize();
         }
-    });
+
+        closeFrame() {
+            remote.getCurrentWindow().close();
+        }
+    }
+
 </script>
 
 <style lang="scss" scoped>
